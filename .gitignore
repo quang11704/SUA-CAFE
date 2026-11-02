@@ -12,3 +12,7 @@ Thumbs.db
 data/seed.json
 attachments/
 *.xlsx
+
+# Active private database pointer and temporary import artifacts
+data/*.active.json
+data/.sua-pointer-*

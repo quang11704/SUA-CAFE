@@ -59,7 +59,9 @@ Các điểm phải đối soát:
 9. Cấu hình thông tin quán/PDF, quản lý nhân viên, nhật ký trước/sau, tải backup SQLite nhất quán.
 10. Migration bổ sung schema v1 bảo toàn dữ liệu cũ; kiểm thử tích hợp và browser chạy trên database tạm, gồm tình huống đồng thời và mất phản hồi thanh toán.
 
-**Chưa có:** tự trừ nguyên liệu, tính cost động, quy đổi đã xác nhận, quản lý mẻ/lô/hạn dùng, nhập kho kèm giá vốn thực tế, danh mục bánh/chuyển dư/POS bánh, ca bán, hoàn một phần, nhập Excel qua UI, backup theo lịch hoặc triển khai production. Bản hiện tại vẫn là bản phát triển nội bộ; phần G2 được triển khai một phần, không đánh dấu toàn bộ P0 đã hoàn thành. Bảng bên dưới là baseline yêu cầu; trạng thái được cập nhật theo phạm vi cụ thể, phần “Có cơ bản” vẫn cần nghiệm thu đầy đủ.
+**Đợt nhập thật:** đã có upload XLSX và xem trước trên UI chủ quán, đối soát tồn/ngày, chuyển database riêng có backup demo, giữ tài khoản/cấu hình, chống replay/tab cũ và khôi phục lựa chọn database sau restart. Dữ liệu thật không đưa lên repo.
+
+**Chưa có:** tự trừ nguyên liệu, tính cost động, quy đổi đã xác nhận, quản lý mẻ/lô/hạn dùng, nhập kho kèm giá vốn thực tế, danh mục bánh/chuyển dư/POS bánh, ca bán, hoàn một phần, đồng bộ/nhập cập nhật Excel vào dữ liệu đã vận hành, backup theo lịch hoặc triển khai production. Bản hiện tại vẫn là bản phát triển nội bộ; phần G2 được triển khai một phần, không đánh dấu toàn bộ P0 đã hoàn thành. Bảng bên dưới là baseline yêu cầu; trạng thái được cập nhật theo phạm vi cụ thể, phần “Có cơ bản” vẫn cần nghiệm thu đầy đủ.
 
 ## 4. Quy ước ưu tiên và trạng thái
 
@@ -140,7 +142,7 @@ Các điểm phải đối soát:
 | --- | --- | --- | --- | --- |
 | FR-34 | Xuất/tải lại phiếu thanh toán PDF | P0 | Có cơ bản | Đúng tên quán, mã, giờ, món/size/lượng/giá/tổng, thanh toán; không lỗi dấu; đơn dài không cắt mất nội dung |
 | FR-35 | Mẫu in phù hợp khổ giấy quán | P1 | Khổ PDF cố định | Xác nhận A4/80mm/58mm, xem trước và thử in; không tràn tên món dài |
-| FR-36 | Nhập Excel có xem trước và bảng lỗi | P1 | Script nhập một lần | Ghép mã thủ công khi mơ hồ; chỉ áp dụng sau xác nhận; tải được báo cáo dòng nhập/bỏ qua/lỗi và chống nhập lại |
+| FR-36 | Nhập Excel có xem trước và bảng lỗi | P1 | Có nhập đầu kỳ qua UI, review/tồn/ngày, chặn nhập đè dữ liệu thật; CLI giữ để thay thế | Ghép mã thủ công khi mơ hồ; chỉ áp dụng sau xác nhận; tải được báo cáo dòng nhập/bỏ qua/lỗi và chống nhập lại |
 | FR-37 | Sao lưu/khôi phục dữ liệu | P0 | Có tải backup và kiểm thử phục hồi; chưa lịch tự động | Sao lưu nhất quán, lưu ngoài máy chạy; phục hồi thử thành công; không ghi đè DB khi nâng cấp |
 
 ## 6. Business rules — Quy tắc nghiệp vụ

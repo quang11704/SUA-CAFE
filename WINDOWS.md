@@ -17,6 +17,8 @@ Không mở `127.0.0.1:8000` trên máy Windows để truy cập Codespaces: đ�
 
 Codespaces cần quyền truy cập repo và hạn mức sử dụng của tài khoản GitHub; dịch vụ có thể tính phí khi vượt hạn mức. Đây là môi trường phát triển để thử app, chưa phải nơi triển khai vận hành quán lâu dài. Dữ liệu nằm trong codespace, không nằm trên máy Windows. Hãy tải backup trước khi xóa hoặc tạo lại codespace.
 
+Sau khi thử app, dùng mục **Dữ liệu quán** để chọn hai file Excel và chuyển sang số liệu thật; xem [IMPORT_EXCEL.md](IMPORT_EXCEL.md). Không đưa workbook thật vào commit.
+
 ## Cách 2 — Cài Python một lần và chạy trên Windows
 
 Không cần cài Git hoặc Node.js cho cách này. Bạn cần kết nối Internet khi tải Python, tải mã nguồn và cài thư viện lần đầu.
@@ -62,7 +64,7 @@ Nếu trình duyệt không tự mở, nhập **`http://127.0.0.1:8000`**. Lần
 
 ### Dữ liệu lưu ở đâu?
 
-Mặc định dữ liệu quán nằm tại **`data\sua.sqlite3`** trong thư mục app. Có thể có thêm các file WAL/SHM do SQLite tạo khi server đang chạy. Đây không phải dữ liệu tự đồng bộ lên GitHub.
+Ban đầu dữ liệu nằm tại **`data\sua.sqlite3`**. Sau chuyển dữ liệu thật qua giao diện, marker `data\sua.active.json` chọn file **`data\sua-live-<mã>.sqlite3`**; bản demo và backup riêng vẫn được giữ trong thư mục app. Đừng chỉ sao chép database demo cũ khi cần dữ liệu thật. Có thể có thêm các file WAL/SHM do SQLite tạo khi server đang chạy. Đây không phải dữ liệu tự đồng bộ lên GitHub.
 
 - Vào **Cài đặt → Tải bản sao SQLite** để sao lưu nhất quán.
 - Giữ bản sao ở nơi an toàn ngoài thư mục app và ngoài máy nếu có thể.

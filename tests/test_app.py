@@ -18,11 +18,11 @@ import server
 
 class Client:
     def __init__(self, url):
-        self.url, self.csrf = url, ''
+        self.url, self.csrf, self.dataset_id = url, '', ''
         self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
 
     def call(self, path, data=None, headers=None):
-        request_headers = {'X-Sua-Request': '1', 'X-CSRF-Token': self.csrf}
+        request_headers = {'X-Sua-Request': '1', 'X-CSRF-Token': self.csrf, 'X-Sua-Dataset': self.dataset_id}
         request_headers.update(headers or {})
         request = urllib.request.Request(self.url + '/api/' + path,
             data=json.dumps(data).encode() if data is not None else None, headers=request_headers)
@@ -38,10 +38,12 @@ class Client:
         status, data = self.call('setup' if setup else 'login', dict(username=username, password=password, display_name=username))
         assert status == 201, (status, data)
         self.csrf = data['csrf']
+        self.state()
 
     def state(self):
         status, state = self.call('state')
         assert status == 200, (status, state)
+        self.dataset_id = state['dataset_id']
         return state
 
 

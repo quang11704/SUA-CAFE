@@ -11,6 +11,8 @@ import secrets
 import sqlite3
 import time
 import tempfile
+import threading
+import sys
 from datetime import datetime
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from http.cookies import SimpleCookie
@@ -27,15 +29,34 @@ BASE = Path(__file__).parent
 PRIVATE_SEED = BASE / 'data/seed.json'
 DEMO = not PRIVATE_SEED.is_file()
 SEED = json.loads((BASE / 'data/demo.json' if DEMO else PRIVATE_SEED).read_text(encoding='utf-8'))
-DB = Path(os.environ.get('SUA_DB', str(BASE / 'data/sua.sqlite3')))
+def resolve_database(configured):
+    configured = Path(configured).resolve()
+    marker = configured.with_suffix('.active.json')
+    if not marker.exists():
+        return configured
+    data = json.loads(marker.read_text(encoding='utf-8'))
+    name = data.get('database', '')
+    if not re.fullmatch(r'sua-live-[0-9a-f]{32}\.sqlite3', name):
+        raise ValueError('Cấu hình dữ liệu đang dùng không hợp lệ. Giữ nguyên dữ liệu và kiểm tra bản sao lưu.')
+    selected = configured.parent / name
+    if selected.resolve().parent != configured.parent:
+        raise ValueError('Cấu hình database phải nằm cùng thư mục dữ liệu.')
+    if not selected.is_file():
+        raise ValueError('Không tìm thấy database đang dùng. Không tạo database rỗng; hãy kiểm tra bản sao lưu.')
+    return selected
+
+
+CONFIG_DB = Path(os.environ.get('SUA_DB', str(BASE / 'data/sua.sqlite3'))).resolve()
+DB = resolve_database(CONFIG_DB)
+DATASET_LOCK = threading.RLock()
 PDF_FONT = BASE / 'assets/fonts/DejaVuSans.ttf'
 TZ = ZoneInfo('Asia/Ho_Chi_Minh')
 DEFAULT_SETTINGS = dict(name='SỨA CÀ PHÊ', address='', phone='', footer='Cảm ơn bạn đã ghé SỨA!')
 ROLES = {'owner', 'cashier', 'inventory'}
 
 
-def connect():
-    c = sqlite3.connect(DB, timeout=15)
+def connect(path=None):
+    c = sqlite3.connect(path if path is not None else DB, timeout=15)
     c.row_factory = sqlite3.Row
     c.execute('PRAGMA foreign_keys=ON')
     return c
@@ -128,9 +149,12 @@ def audit(c, user, action, entity, before=None, after=None):
               (now(), user['id'], user['username'], action, str(entity), encode(before), encode(after)))
 
 
-def init():
-    DB.parent.mkdir(parents=True, exist_ok=True)
-    with connect() as c:
+def init(db_path=None, seed=None, demo=None):
+    target = Path(DB if db_path is None else db_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    selected_seed = SEED if seed is None else seed
+    selected_demo = DEMO if demo is None else demo
+    with connect(target) as c:
         c.execute('PRAGMA journal_mode=WAL')
         c.executescript('''
         CREATE TABLE IF NOT EXISTS orders(id INTEGER PRIMARY KEY, created TEXT, payment TEXT, total REAL, cost REAL, items TEXT);
@@ -148,13 +172,21 @@ def init():
         CREATE TABLE IF NOT EXISTS refunds(id INTEGER PRIMARY KEY,order_id INTEGER NOT NULL UNIQUE REFERENCES orders(id),created TEXT NOT NULL,amount INTEGER NOT NULL,reason TEXT NOT NULL,user_id INTEGER NOT NULL REFERENCES users(id));
         CREATE TABLE IF NOT EXISTS migrations(version INTEGER PRIMARY KEY,applied TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS app_metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS import_jobs(id TEXT PRIMARY KEY,user_id INTEGER NOT NULL REFERENCES users(id),created INTEGER NOT NULL,expires INTEGER NOT NULL,seed_json TEXT NOT NULL,warnings_json TEXT NOT NULL);
         ''')
         c.execute('BEGIN IMMEDIATE')
-        seed_identity = ('demo:' if DEMO else 'excel:') + digest(encode(SEED))
+        stored_kind = c.execute("SELECT value FROM app_metadata WHERE key='source_kind'").fetchone()
+        if stored_kind and stored_kind[0] == 'database':
+            selected_seed = load_seed(c)
+            selected_demo = metadata(c, 'source_mode', 'excel') == 'demo'
+        seed_identity = ('demo:' if selected_demo else 'excel:') + digest(encode(selected_seed))
         previous_seed = c.execute("SELECT value FROM app_metadata WHERE key='seed_identity'").fetchone()
         if previous_seed and previous_seed[0] != seed_identity:
             raise ValueError('Database không khớp nguồn dữ liệu hiện tại. Giữ database cũ, sao lưu và chọn một file SUA_DB mới khi đổi demo/Excel hoặc nhập lại seed. Xem IMPORT_EXCEL.md.')
         c.execute("INSERT OR IGNORE INTO app_metadata VALUES('seed_identity',?)", (seed_identity,))
+        for key, value in {'seed_json': encode(selected_seed), 'source_mode': 'demo' if selected_demo else 'excel',
+                           'source_kind': 'database' if seed is not None else 'file', 'dataset_id': secrets.token_hex(16)}.items():
+            c.execute('INSERT OR IGNORE INTO app_metadata VALUES(?,?)', (key, value))
         additions = {
             'orders': {'user_id': 'INTEGER', 'request_key': 'TEXT', 'fingerprint': 'TEXT', 'status': "TEXT NOT NULL DEFAULT 'paid'", 'shop_json': 'TEXT', 'note': "TEXT NOT NULL DEFAULT ''", 'discount': 'INTEGER NOT NULL DEFAULT 0', 'subtotal': 'INTEGER'},
             'expenses': {'category': "TEXT NOT NULL DEFAULT 'Khác'", 'user_id': 'INTEGER', 'voided': 'INTEGER NOT NULL DEFAULT 0'},
@@ -168,17 +200,27 @@ def init():
                     c.execute(f'ALTER TABLE {table} ADD COLUMN {column} {spec}')
         c.execute('CREATE UNIQUE INDEX IF NOT EXISTS order_request ON orders(user_id,request_key)')
         c.execute('CREATE INDEX IF NOT EXISTS order_created ON orders(created)')
-        c.executemany('INSERT OR IGNORE INTO stock VALUES(?,?)', [(s['id'], s['qty']) for s in SEED['stock']])
+        c.executemany('INSERT OR IGNORE INTO stock VALUES(?,?)', [(s['id'], s['qty']) for s in selected_seed['stock']])
         c.executemany('INSERT OR IGNORE INTO products(id,category,name,size,price,cost) VALUES(?,?,?,?,?,?)',
-                      [(p['id'], p['category'], p['name'], p['size'], money(p['price']), money(p['cost'])) for p in SEED['menu']])
+                      [(p['id'], p['category'], p['name'], p['size'], money(p['price']), money(p['cost'])) for p in selected_seed['menu']])
         c.execute('INSERT OR IGNORE INTO settings VALUES(1,?)', (encode(DEFAULT_SETTINGS),))
         c.execute('INSERT OR IGNORE INTO migrations VALUES(1,?)', (now(),))
         c.execute('PRAGMA user_version=1')
 
 
+def metadata(c, key, default=None):
+    row = c.execute('SELECT value FROM app_metadata WHERE key=?', (key,)).fetchone()
+    return row[0] if row else default
+
+
+def load_seed(c):
+    stored = metadata(c, 'seed_json')
+    return json.loads(stored) if stored else SEED
+
+
 class ApiError(Exception):
-    def __init__(self, status, message):
-        self.status, self.message = status, message
+    def __init__(self, status, message, code=None):
+        self.status, self.message, self.code = status, message, code
 
 
 def require(user, *roles):
@@ -189,15 +231,17 @@ def require(user, *roles):
 def build_state(c, user):
     owner = user['role'] == 'owner'
     stock_user = user['role'] in {'owner', 'inventory'}
-    state = dict(demo=DEMO, menu=[dict(r) for r in c.execute('SELECT * FROM products ORDER BY rowid')],
+    seed = load_seed(c)
+    state = dict(demo=metadata(c, 'source_mode', 'demo' if DEMO else 'excel') == 'demo',
+                 dataset_id=metadata(c, 'dataset_id'), inventory_date=metadata(c, 'inventory_date'), menu=[dict(r) for r in c.execute('SELECT * FROM products ORDER BY rowid')],
                  stock=[], recipes=[], batches=[], history=[], orders=[], expenses=[], cakes=[], movements=[], refunds=[], audit=[], users=[],
                  settings=json.loads(c.execute('SELECT data FROM settings WHERE id=1').fetchone()[0]),
                  user={k: user[k] for k in ('id', 'username', 'display_name', 'role')})
     if stock_user:
         qty = {r['id']: r['qty'] for r in c.execute('SELECT * FROM stock')}
-        state['stock'] = [dict(s, qty=qty[s['id']]) for s in SEED['stock']]
+        state['stock'] = [dict(s, qty=qty[s['id']]) for s in seed['stock']]
         state['movements'] = [dict(r) for r in c.execute('SELECT * FROM movements ORDER BY id DESC')]
-        state['recipes'], state['batches'] = SEED['recipes'], SEED['batches']
+        state['recipes'], state['batches'] = seed['recipes'], seed['batches']
     if owner or user['role'] == 'cashier':
         query = 'SELECT * FROM orders' + ('' if owner else ' WHERE user_id=?') + ' ORDER BY id DESC'
         state['orders'] = [dict(r) for r in c.execute(query, () if owner else (user['id'],))]
@@ -205,7 +249,7 @@ def build_state(c, user):
     if owner:
         for table in ['expenses', 'cakes']:
             state[table] = [dict(r) for r in c.execute(f'SELECT * FROM {table} ORDER BY id DESC')]
-        state['history'] = SEED['history']
+        state['history'] = seed['history']
         state['users'] = [dict(r) for r in c.execute('SELECT id,username,display_name,role,active FROM users ORDER BY id')]
         state['audit'] = [dict(r) for r in c.execute('SELECT * FROM audit_logs ORDER BY id DESC LIMIT 250')]
     else:
@@ -329,15 +373,21 @@ class Handler(BaseHTTPRequestHandler):
         if not hmac.compare_digest(self.headers.get('X-CSRF-Token', ''), user['csrf']):
             raise ApiError(403, 'Phiên xác nhận không hợp lệ. Vui lòng tải lại trang.')
 
+    def check_dataset(self, c, supplied=None):
+        expected = metadata(c, 'dataset_id', '')
+        if not hmac.compare_digest(supplied if supplied is not None else self.headers.get('X-Sua-Dataset', ''), expected):
+            raise ApiError(409, 'Dữ liệu quán đã thay đổi. Vui lòng tải lại và kiểm tra đơn trước khi tiếp tục.', 'DATASET_CHANGED')
+
     def session_cookie(self, token, expire=False):
         secure = '; Secure' if os.environ.get('SUA_SECURE_COOKIE') == '1' else ''
         return f'sua_session={token}; Path=/; HttpOnly; SameSite=Strict; Max-Age={0 if expire else 43200}{secure}'
 
     def do_GET(self):
         try:
-            self.get()
+            with DATASET_LOCK:
+                self.get()
         except ApiError as e:
-            self.send({'error': e.message}, e.status)
+            self.send(dict(error=e.message, **({'code': e.code} if e.code else {})), e.status)
         except (ValueError, TypeError, KeyError):
             self.send({'error': 'Dữ liệu yêu cầu không hợp lệ'}, 400)
         except Exception:
@@ -363,7 +413,15 @@ class Handler(BaseHTTPRequestHandler):
             user = self.current_user(c)
             if path == '/api/state':
                 return self.send(build_state(c, user))
+            if path in {'/api/import/status', '/api/import/demo-backup'}:
+                require(user, 'owner')
+                import live_import
+                if path.endswith('/status'):
+                    return self.send(live_import.status(sys.modules[__name__], c))
+                data = live_import.demo_backup(sys.modules[__name__], c)
+                return self.send(data, kind='application/octet-stream', filename='SUA-demo-before-live.sqlite3')
             if path.startswith('/api/invoice/'):
+                self.check_dataset(c, parse_qs(urlsplit(self.path).query).get('dataset', [None])[0])
                 order = c.execute('SELECT * FROM orders WHERE id=?', (int(path.rsplit('/', 1)[1]),)).fetchone()
                 if not order:
                     raise ApiError(404, 'Không tìm thấy đơn hàng')
@@ -399,10 +457,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         try:
-            result, cookie = self.post()
+            with DATASET_LOCK:
+                result, cookie = self.post()
             self.send(result, 201, cookie=cookie)
         except ApiError as e:
-            self.send({'error': e.message}, e.status)
+            self.send(dict(error=e.message, **({'code': e.code} if e.code else {})), e.status)
         except ValueError as e:
             self.send({'error': str(e) or 'Dữ liệu không hợp lệ'}, 400)
         except (KeyError, TypeError, OverflowError):
@@ -431,19 +490,32 @@ class Handler(BaseHTTPRequestHandler):
         same_host = origin and urlsplit(origin).scheme in {'http', 'https'} and urlsplit(origin).netloc == self.headers.get('Host')
         if (origin and not same_host and origin != codespaces_origin) or self.headers.get('Sec-Fetch-Site') == 'cross-site':
             raise ApiError(403, 'Không chấp nhận yêu cầu từ trang khác')
+        import_path = path in {'/api/import/preview', '/api/import/apply'}
+        if import_path:
+            with connect() as auth:
+                actor = self.current_user(auth)
+                require(actor, 'owner')
+                self.csrf(actor)
+                if path.endswith('/preview'):
+                    self.check_dataset(auth)
         size = int(self.headers.get('Content-Length', 0))
-        if not 0 < size <= 100000:
+        if not 0 < size <= (24 * 1024 * 1024 if path == '/api/import/preview' else 100000):
             raise ValueError('Yêu cầu quá lớn hoặc trống')
         d = json.loads(self.rfile.read(size))
         if not isinstance(d, dict):
             raise ValueError('Yêu cầu không hợp lệ')
         if path in {'/api/setup', '/api/login'}:
             return self.login(d, setup=path == '/api/setup')
+        if import_path:
+            import live_import
+            return live_import.handle(self, sys.modules[__name__], path, d), None
         cookie = None
         with connect() as c:
             c.execute('BEGIN IMMEDIATE')
             user = self.current_user(c)
             self.csrf(user)
+            if path in {'/api/orders','/api/products','/api/stock','/api/refunds','/api/cakes','/api/expenses','/api/void'}:
+                self.check_dataset(c)
             if path == '/api/logout':
                 c.execute('DELETE FROM sessions WHERE token_hash=?', (user['token_hash'],))
                 return {}, self.session_cookie('', True)

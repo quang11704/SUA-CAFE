@@ -2,16 +2,67 @@
 import argparse
 import datetime
 import json
+import re
+import zipfile
+
+from defusedxml.ElementTree import iterparse
 from pathlib import Path
 
 import openpyxl
 
 
+def _check_xml_bounds(source):
+    # Some valid exports omit <dimension>; bound physical cells before asking
+    # openpyxl to calculate dimensions, avoiding sparse billion-row ranges.
+    with zipfile.ZipFile(source) as archive:
+        if sum(entry.file_size for entry in archive.infolist()) > 40 * 1024 * 1024:
+            raise ValueError('Nội dung Excel vượt 40 MB giải nén.')
+        for entry in archive.infolist():
+            if not entry.filename.startswith('xl/worksheets/') or not entry.filename.endswith('.xml'):
+                continue
+            with archive.open(entry) as stream:
+                rows = cells = 0
+                for event, element in iterparse(stream, events=('start', 'end'), forbid_dtd=True):
+                    tag = element.tag.rsplit('}', 1)[-1]
+                    if event == 'start' and tag == 'row':
+                        rows += 1
+                        cells = 0
+                        if rows > 20000 or int(element.get('r', rows)) > 20000:
+                            raise ValueError('Sheet vượt giới hạn 20.000 dòng dữ liệu.')
+                    elif event == 'start' and tag == 'c':
+                        cells += 1
+                        ref = re.fullmatch(r'([A-Z]+)([0-9]+)', element.get('r', ''))
+                        if ref:
+                            column = 0
+                            for char in ref[1]:column = column * 26 + ord(char) - 64
+                            if column > 100 or int(ref[2]) > 20000:
+                                raise ValueError('Sheet vượt giới hạn 20.000 dòng / 100 cột dữ liệu.')
+                        if cells > 100:
+                            raise ValueError('Sheet vượt 100 cột dữ liệu.')
+                    elif event == 'end':
+                        element.clear()
+    if hasattr(source, 'seek'):
+        source.seek(0)
+
+
+def _check_sheets(workbook, names):
+    for name in names:
+        sheet = workbook[name]
+        if sheet.max_row is None or sheet.max_column is None:
+            sheet.calculate_dimension(force=True)
+        if sheet.max_row is None or sheet.max_column is None or sheet.max_row > 20000 or sheet.max_column > 100:
+            raise ValueError('Sheet vượt giới hạn 20.000 dòng / 100 cột hoặc thiếu kích thước hợp lệ: ' + name)
+
+
 def extract(inventory_path, cost_path):
-    inventory = openpyxl.load_workbook(inventory_path, data_only=True, keep_links=False)
+    _check_xml_bounds(inventory_path)
+    _check_xml_bounds(cost_path)
+    inventory = openpyxl.load_workbook(inventory_path, data_only=True, keep_links=False, read_only=True)
     try:
-        cost = openpyxl.load_workbook(cost_path, data_only=True, keep_links=False)
+        cost = openpyxl.load_workbook(cost_path, data_only=True, keep_links=False, read_only=True)
         try:
+            _check_sheets(inventory, ['Quan Ly Kho V3', 'Bán Hàng'])
+            _check_sheets(cost, ['04_Cost_Menu_ChiTiet', '03_DinhLuong_TungMon', '02_Cost_Cot_Topping'])
             menu = []
             for row in list(cost['04_Cost_Menu_ChiTiet'].values)[4:]:
                 if isinstance(row[0], (float, int)) and row[1] and isinstance(row[8], (float, int)):

@@ -4,6 +4,23 @@ Mã nguồn công khai chỉ chứa **dữ liệu demo tổng hợp** tại `dat
 
 App tự dùng `data/seed.json` nếu file riêng tư này tồn tại; nếu không, dùng demo. Khi chuyển từ demo sang dữ liệu thật, khởi động với **một database mới**, không dùng lại database demo. Script nhập chỉ tạo JSON, không xóa, gộp hoặc sửa database đang có. App lưu dấu nguồn seed trong database và từ chối khởi động nếu nguồn đã đổi; cần chọn database mới để tránh trộn demo/thật.
 
+## Cách nên dùng — nhập ngay trong app
+
+1. Nếu đang chạy bản cũ, cập nhật trong Codespaces: `git pull --ff-only`, `bash install.sh`, `bash .devcontainer/restart.sh`; tải lại trang app.
+2. Đăng nhập chủ quán, vào **Dữ liệu quán** hoặc bấm **Chuyển sang dữ liệu thật** trên banner dùng thử.
+3. Chọn file **SỨA CAFÉ.xlsx** và file **COST FINAL.xlsx** từ máy tính. Mỗi file tối đa 8 MB, chỉ hỗ trợ `.xlsx` không macro/mã hóa. File không được đưa vào commit.
+4. Bấm **Đọc file & xem trước**. Kiểm tra danh mục/giá và các cảnh báo. Có thể sửa số tồn từng nguyên liệu theo kiểm kê.
+5. Chọn ngày tương ứng với tồn đầu; đánh dấu xác nhận đã đối soát; bấm **Áp dụng dữ liệu thật cho quán**, đọc và xác nhận hộp thoại.
+6. Sau hoàn tất, tài khoản và thông tin quán vẫn dùng được. Giao dịch demo được giữ riêng, không trộn vào doanh thu thật. Tải bản sao dữ liệu hiện tại và bản dùng thử đã cất nếu cần.
+
+Bản xem trước hết hạn sau 30 phút. Nếu mất phản hồi khi áp dụng, thử lại cùng bản xem trước để nhận lại kết quả; không tạo thêm một bộ dữ liệu. Các tab/giỏ/PDF thuộc demo bị chặn sau chuyển. Khởi động lại vẫn chọn database thật từ marker riêng tư.
+
+Upload dùng kênh app riêng tư và chỉ chủ quán có quyền. Bản xem trước và dữ liệu sau nhập nằm trong SQLite riêng, không sinh seed hoặc Excel trong repo. Workbook được kiểm tra giới hạn giải nén/kích thước và đọc qua XML parser an toàn; không chạy macro/công thức. Các dòng doanh thu trùng ngày được giữ kèm cảnh báo để đối soát, không cộng vào doanh thu mới.
+
+Sau khi đã dùng thật, luồng nạp đầu kỳ sẽ khóa. Sửa menu, nhập/xuất kho và ghi chi phí bằng chức năng nghiệp vụ; không tải lại Excel đè số dư đang vận hành.
+
+**Phần CLI dưới đây là cách thay thế cho người quản trị. Không làm thêm nếu đã nhập bằng giao diện.**
+
 ## 1. Upload Excel riêng tư vào Codespaces
 
 Giữ cổng app ở chế độ **Private**. Trong Explorer của Codespaces, tạo thư mục `attachments` và upload trực tiếp hai file vào đó. Không đưa Excel vào giao diện tạo commit, issue hoặc link tải công khai trên GitHub.
