@@ -40,13 +40,13 @@ Chạy các lệnh dưới đây trong Terminal tại **thư mục gốc của r
 
 Nếu có dữ liệu muốn giữ, vào **Cài đặt → Tải bản sao SQLite**, tải bản sao về nơi riêng tư và an toàn. Backup chứa dữ liệu quán và tài khoản; không commit file này lên GitHub.
 
-Nếu app chạy trực tiếp trong Terminal, nhấn `Ctrl+C` tại đúng Terminal đó. Nếu app được Codespaces chạy nền:
+Nếu app chạy trực tiếp trong Terminal, nhấn `Ctrl+C` tại đúng Terminal đó. Với app tự chạy/được giám sát trong Codespaces, dừng cả bộ giám sát trước:
 
 ```bash
-ps -eo pid,args | grep '[p]ython.*server.py'
+python3 .devcontainer/boot.py --stop
 ```
 
-Kiểm tra đúng tiến trình SỨA của codespace này rồi dùng `kill <PID>` với mã tiến trình tương ứng. Không gõ nguyên chữ `<PID>` và không dừng chương trình khác. Đóng tab trình duyệt không dừng server.
+Không chỉ kill tiến trình server con: bộ giám sát sẽ chạy lại nó. Đóng tab trình duyệt cũng không dừng app. Luồng nhập Excel ngay trên giao diện không cần dừng server thủ công; mục này chỉ áp dụng cách CLI thay thế.
 
 **Không xóa database cũ, thư mục `data`, hoặc WAL/SHM đang hoạt động.** Giữ database demo và các database thật cũ để tham khảo/khôi phục riêng.
 

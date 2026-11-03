@@ -4,6 +4,20 @@ Web app tiếng Việt tông hồng: bán hàng kèm topping, bill/PDF tùy ch�
 
 **Branch công khai chỉ chứa dữ liệu mẫu giả lập** (3 món, 2 nguyên liệu), không chứa giá vốn/tồn kho/doanh thu thật từ Excel. App hiển thị nhãn BẢN DÙNG THỬ khi chạy dữ liệu mẫu. Xem [IMPORT_EXCEL.md](IMPORT_EXCEL.md) để nhập dữ liệu của quán trong workspace riêng.
 
+## Chỉ mở Ports để dùng app
+
+Codespaces tự chuẩn bị thư viện và chạy SỨA khi máy khởi động hoặc bạn kết nối lại. Server được giám sát: nếu tiến trình app dừng, nó tự chạy lại với thời gian chờ tăng dần; không tạo server trùng khi cả hai hook cùng chạy. Khi mã backend thay đổi rồi kết nối lại, app được khởi động lại bằng mã mới. Không tự pull/ghi đè thay đổi Git và không đặt lại dữ liệu.
+
+**Codespace đã tạo từ trước:** cập nhật/rebuild cấu hình một lần, hoàn toàn bằng giao diện:
+
+1. Nhấn **Ctrl+Shift+P → Git: Pull** để lấy bản mới trên branch `feat/sua-cafe-management`.
+2. Nhấn **Ctrl+Shift+P → Codespaces: Rebuild Container**, chờ hoàn tất. Giữ nguyên workspace/dữ liệu, không xóa Codespace để cập nhật.
+3. Sau đó chỉ mở **Ports → 8000 → Open in Browser**, giữ cổng **Private**. Không phải gõ lệnh cài/chạy mỗi lần.
+
+Từ một Codespace mới lấy đúng branch, cấu hình này áp dụng tự động ngay khi tạo. Codespaces vẫn cần đang chạy; nếu máy bị Stop thì Resume Codespace trước. Đây không phải hosting 24/7.
+
+Quản trị thủ công khi cần: `bash .devcontainer/start.sh` (chuẩn bị/chạy nếu cần), `bash .devcontainer/restart.sh` (khởi động lại), `python3 .devcontainer/boot.py --stop` (dừng cả giám sát và app), `python3 .devcontainer/boot.py --status` (kiểm tra tiến trình/readiness). Đừng chỉ kill tiến trình con khi muốn dừng hẳn, vì giám sát sẽ chạy lại. Nhật ký ở thư mục `/tmp/sua-cafe-<uid>-<mã-workspace>/server.log`; dữ liệu quán vẫn ở thư mục `data`.
+
 ## Menu mới, topping và in bill
 
 Cập nhật Codespaces bằng `git pull --ff-only`, `bash install.sh`, `bash .devcontainer/restart.sh`, rồi tải lại trang app.
@@ -122,7 +136,7 @@ node tests/browser_import.cjs
 node tests/browser_toppings.cjs
 ```
 
-45 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, hoàn ngày khác, báo cáo/CSV, hủy sổ/chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
+49 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, tự khởi động/khôi phục tiến trình/không tạo trùng/không dừng chương trình khác, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, hoàn ngày khác, báo cáo/CSV, hủy sổ/chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
 
 Luồng nhập đã kiểm tra end-to-end bằng XLSX giả lập và parser đã đọc được hai workbook thật trong workspace riêng; không commit dữ liệu nguồn. Cấu hình Codespaces chưa được tạo/thử trên một Codespace GitHub thật trong phiên này; đã kiểm thử đường dẫn cài/start và mô phỏng Origin của cổng chuyển tiếp. Launcher Windows chưa chạy thử trên Windows.
 

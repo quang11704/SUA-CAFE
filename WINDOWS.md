@@ -9,7 +9,7 @@
 1. Đăng nhập GitHub và mở kho **[quang11704/SUA-CAFE](https://github.com/quang11704/SUA-CAFE)**.
 2. Trong danh sách branch phía trên các file, chọn **`feat/sua-cafe-management`**. Nếu chưa thấy branch, đợi việc push hoàn tất rồi tải lại trang.
 3. Chọn **Code → Codespaces → Create codespace on feat/sua-cafe-management**.
-4. Đợi GitHub chuẩn bị môi trường theo cấu hình trong repo. Làm theo mục Codespaces trong README để khởi động app nếu nó chưa chạy.
+4. Đợi GitHub chuẩn bị môi trường. SỨA tự cài và khởi động; khi bạn kết nối lại, app cũng tự kiểm tra/chạy lại. Codespace cũ cần Git: Pull rồi Codespaces: Rebuild Container một lần như README.
 5. Trong tab **Ports**, mở cổng **8000** bằng biểu tượng **Open in Browser**. Giữ cổng ở chế độ **Private**.
 6. Ở lần mở đầu tiên, tự tạo tài khoản chủ quán và mật khẩu. Sau đó vào **Cài đặt & nhân viên** để cập nhật thông tin quán hoặc tạo tài khoản nhân viên.
 
