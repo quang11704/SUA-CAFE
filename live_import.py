@@ -205,7 +205,8 @@ def handle(handler, app, path, data):
             live.execute('BEGIN IMMEDIATE')
             # IDs remain stable for the accounts/session; no financial/demo rows copied.
             for table, columns in [('users', 'id,username,password_hash,display_name,role,active'),
-                                   ('sessions', 'token_hash,user_id,csrf,expires')]:
+                                   ('sessions', 'token_hash,user_id,csrf,expires'),
+                                   ('brand_assets', 'id,mime,data')]:
                 rows = c.execute(f'SELECT {columns} FROM {table}').fetchall()
                 placeholders = ','.join('?' for _ in columns.split(','))
                 live.executemany(f'INSERT INTO {table}({columns}) VALUES({placeholders})', [tuple(r) for r in rows])

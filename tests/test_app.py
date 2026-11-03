@@ -30,6 +30,8 @@ class Client:
             with self.opener.open(request) as response:
                 raw = response.read()
                 result = json.loads(raw) if 'application/json' in response.headers.get('Content-Type','') else raw
+                if isinstance(result, dict) and result.get('dataset_id'):
+                    self.dataset_id = result['dataset_id']
                 return response.status, result
         except urllib.error.HTTPError as e:
             return e.code, json.load(e)
@@ -156,6 +158,7 @@ class AppTest(unittest.TestCase):
             self.assertEqual(c.execute('SELECT COUNT(*) FROM orders WHERE request_key=?',(payload['request_key'],)).fetchone()[0],1)
 
     def test_stock_atomic_concurrent_and_audit(self):
+        self.inventory.state()
         sid=server.SEED['stock'][0]['id']
         with server.connect() as c:c.execute('UPDATE stock SET qty=1 WHERE id=?',(sid,))
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:

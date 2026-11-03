@@ -167,6 +167,8 @@ def init(db_path=None, seed=None, demo=None):
         CREATE TABLE IF NOT EXISTS login_attempts(id INTEGER PRIMARY KEY,peer TEXT NOT NULL,created INTEGER NOT NULL);
         CREATE INDEX IF NOT EXISTS attempts_peer ON login_attempts(peer,created);
         CREATE TABLE IF NOT EXISTS products(id TEXT PRIMARY KEY,category TEXT NOT NULL,name TEXT NOT NULL,size TEXT NOT NULL,price INTEGER NOT NULL,cost INTEGER NOT NULL,active INTEGER NOT NULL DEFAULT 1);
+        CREATE TABLE IF NOT EXISTS toppings(id TEXT PRIMARY KEY,name TEXT NOT NULL,price INTEGER NOT NULL,cost INTEGER NOT NULL DEFAULT 0,active INTEGER NOT NULL DEFAULT 1,cost_known INTEGER NOT NULL DEFAULT 0,scope TEXT NOT NULL DEFAULT 'general');
+        CREATE TABLE IF NOT EXISTS product_toppings(product_id TEXT NOT NULL REFERENCES products(id),topping_id TEXT NOT NULL REFERENCES toppings(id),price_override INTEGER,PRIMARY KEY(product_id,topping_id));
         CREATE TABLE IF NOT EXISTS settings(id INTEGER PRIMARY KEY CHECK(id=1),data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS audit_logs(id INTEGER PRIMARY KEY,created TEXT NOT NULL,user_id INTEGER,username TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,before_json TEXT,after_json TEXT);
         CREATE TABLE IF NOT EXISTS refunds(id INTEGER PRIMARY KEY,order_id INTEGER NOT NULL UNIQUE REFERENCES orders(id),created TEXT NOT NULL,amount INTEGER NOT NULL,reason TEXT NOT NULL,user_id INTEGER NOT NULL REFERENCES users(id));
@@ -175,6 +177,8 @@ def init(db_path=None, seed=None, demo=None):
         CREATE TABLE IF NOT EXISTS import_jobs(id TEXT PRIMARY KEY,user_id INTEGER NOT NULL REFERENCES users(id),created INTEGER NOT NULL,expires INTEGER NOT NULL,seed_json TEXT NOT NULL,warnings_json TEXT NOT NULL);
         ''')
         c.execute('BEGIN IMMEDIATE')
+        import branding
+        branding.init_schema(c)
         stored_kind = c.execute("SELECT value FROM app_metadata WHERE key='source_kind'").fetchone()
         if stored_kind and stored_kind[0] == 'database':
             selected_seed = load_seed(c)
@@ -188,7 +192,9 @@ def init(db_path=None, seed=None, demo=None):
                            'source_kind': 'database' if seed is not None else 'file', 'dataset_id': secrets.token_hex(16)}.items():
             c.execute('INSERT OR IGNORE INTO app_metadata VALUES(?,?)', (key, value))
         additions = {
-            'orders': {'user_id': 'INTEGER', 'request_key': 'TEXT', 'fingerprint': 'TEXT', 'status': "TEXT NOT NULL DEFAULT 'paid'", 'shop_json': 'TEXT', 'note': "TEXT NOT NULL DEFAULT ''", 'discount': 'INTEGER NOT NULL DEFAULT 0', 'subtotal': 'INTEGER'},
+            'products': {'cost_known': 'INTEGER NOT NULL DEFAULT 1'},
+            'toppings': {'scope': "TEXT NOT NULL DEFAULT 'general'"},
+            'orders': {'user_id': 'INTEGER', 'request_key': 'TEXT', 'fingerprint': 'TEXT', 'status': "TEXT NOT NULL DEFAULT 'paid'", 'shop_json': 'TEXT', 'note': "TEXT NOT NULL DEFAULT ''", 'discount': 'INTEGER NOT NULL DEFAULT 0', 'subtotal': 'INTEGER', 'cost_complete': 'INTEGER NOT NULL DEFAULT 1'},
             'expenses': {'category': "TEXT NOT NULL DEFAULT 'Khác'", 'user_id': 'INTEGER', 'voided': 'INTEGER NOT NULL DEFAULT 0'},
             'cakes': {'user_id': 'INTEGER', 'voided': 'INTEGER NOT NULL DEFAULT 0'},
             'movements': {'user_id': 'INTEGER'},
@@ -232,16 +238,21 @@ def build_state(c, user):
     owner = user['role'] == 'owner'
     stock_user = user['role'] in {'owner', 'inventory'}
     seed = load_seed(c)
-    state = dict(demo=metadata(c, 'source_mode', 'demo' if DEMO else 'excel') == 'demo',
+    state = dict(toppings=[dict(r) for r in c.execute('SELECT * FROM toppings ORDER BY rowid')],
+                 product_toppings=[dict(r) for r in c.execute('SELECT * FROM product_toppings')],
+                 catalog_version=metadata(c,'catalog_version'),menu_version=metadata(c,'catalog_version'),demo=metadata(c, 'source_mode', 'demo' if DEMO else 'excel') == 'demo',
                  dataset_id=metadata(c, 'dataset_id'), inventory_date=metadata(c, 'inventory_date'), menu=[dict(r) for r in c.execute('SELECT * FROM products ORDER BY rowid')],
                  stock=[], recipes=[], batches=[], history=[], orders=[], expenses=[], cakes=[], movements=[], refunds=[], audit=[], users=[],
-                 settings=json.loads(c.execute('SELECT data FROM settings WHERE id=1').fetchone()[0]),
+                 settings=__import__('branding').settings_view(json.loads(c.execute('SELECT data FROM settings WHERE id=1').fetchone()[0])),
                  user={k: user[k] for k in ('id', 'username', 'display_name', 'role')})
     if stock_user:
         qty = {r['id']: r['qty'] for r in c.execute('SELECT * FROM stock')}
         state['stock'] = [dict(s, qty=qty[s['id']]) for s in seed['stock']]
         state['movements'] = [dict(r) for r in c.execute('SELECT * FROM movements ORDER BY id DESC')]
-        state['recipes'], state['batches'] = seed['recipes'], seed['batches']
+        state['recipes'], state['batches'] = list(seed['recipes']), seed['batches']
+        links = json.loads(metadata(c, 'catalog_recipe_links', '{}'))
+        for new_id, old_id in links.items():
+            state['recipes'].extend(dict(r, product=new_id) for r in seed['recipes'] if r['product'] == old_id)
     if owner or user['role'] == 'cashier':
         query = 'SELECT * FROM orders' + ('' if owner else ' WHERE user_id=?') + ' ORDER BY id DESC'
         state['orders'] = [dict(r) for r in c.execute(query, () if owner else (user['id'],))]
@@ -255,11 +266,15 @@ def build_state(c, user):
     else:
         for product in state['menu']:
             product.pop('cost')
+        for topping in state['toppings']:
+            topping.pop('cost')
         for order in state['orders']:
             order.pop('cost')
             items = json.loads(order['items'])
             for item in items:
                 item.pop('cost', None)
+                for topping in item.get('toppings',[]):
+                    topping.pop('cost',None)
             order['items'] = encode(items)
         # Inventory staff may manage quantities, but do not receive purchase prices or recipe costs.
         for item in state['stock']:
@@ -280,62 +295,14 @@ def report(c, period):
     cost = sum(money(o['cost']) for o in orders) + sum(money(b['cost']) * b['sold'] for b in cakes)
     waste = sum(money(b['cost']) * b['waste'] for b in cakes)
     operating = sum(money(e['amount']) for e in expenses)
-    return dict(period=period, gross=gross, refunds=returned, revenue=gross-returned, cost=cost, waste=waste,
-                expenses=operating, profit=gross-returned-cost-waste-operating, count=len(orders))
+    incomplete = sum(not o['cost_complete'] for o in orders)
+    return dict(incomplete_cost_orders=incomplete, period=period, gross=gross, refunds=returned, revenue=gross-returned, cost=cost, waste=waste,
+                expenses=operating, profit=None if incomplete else gross-returned-cost-waste-operating, count=len(orders))
 
 
 def invoice(order):
-    if 'VN' not in pdfmetrics.getRegisteredFontNames():
-        pdfmetrics.registerFont(TTFont('VN', str(PDF_FONT)))
-    shop = json.loads(order['shop_json']) if order['shop_json'] else DEFAULT_SETTINGS
-    buf = io.BytesIO()
-    pdf = canvas.Canvas(buf, pagesize=(350, 700))
-    pdf.setTitle(f"{shop['name']} - Phiếu #{order['id']}")
-    y = 670
-
-    def line(value, size=10):
-        nonlocal y
-        # Wrap by actual font width, including long strings without spaces.
-        value = str(value).replace('\t', ' ')
-        for paragraph in value.split('\n'):
-            remaining = paragraph or ' '
-            while remaining:
-                width = 0
-                for char in remaining:
-                    if pdfmetrics.stringWidth(remaining[:width+1], 'VN', size) > 295:
-                        break
-                    width += 1
-                width = max(1, width)
-                if width < len(remaining) and ' ' in remaining[:width]:
-                    width = remaining.rfind(' ', 0, width) + 1
-                if y < 40:
-                    pdf.showPage()
-                    y = 670
-                pdf.setFont('VN', size)
-                pdf.drawString(25, y, remaining[:width].strip())
-                y -= size + 9
-                remaining = remaining[width:]
-
-    line(shop['name'], 18)
-    for key in ['address', 'phone']:
-        if shop.get(key):
-            line(shop[key])
-    line('PHIẾU THANH TOÁN')
-    line(f"Mã #{order['id']} · {order['created'][:16]}")
-    line(f"Thanh toán: {order['payment']}")
-    line('')
-    for item in json.loads(order['items']):
-        line(f"{item['name']} · {item['size']}")
-        line(f"{item['qty']} × {item['price']:,} = {item['qty'] * item['price']:,} đ")
-    if order['discount']:
-        line(f"Giảm giá: {order['discount']:,} đ")
-    line(f"TỔNG CỘNG: {money(order['total']):,} đ", 13)
-    if order['note']:
-        line('Ghi chú: ' + order['note'])
-    line(shop.get('footer', ''))
-    line('Phiếu thanh toán, không phải hóa đơn thuế.', 9)
-    pdf.save()
-    return buf.getvalue()
+    import branding
+    return branding.invoice(sys.modules[__name__], order)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -396,10 +363,16 @@ class Handler(BaseHTTPRequestHandler):
 
     def get(self):
         path = urlsplit(self.path).path
-        paths = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css'}
+        paths = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/receipt.css': 'receipt.css', '/receipt.js': 'receipt.js'}
         if path in paths:
             f = BASE / 'static' / paths[path]
             return self.send(f.read_bytes(), kind={'html': 'text/html; charset=utf-8', 'js': 'text/javascript; charset=utf-8', 'css': 'text/css'}[f.suffix[1:]])
+        if path.startswith('/assets/fonts/'):
+            import branding
+            name = path.rsplit('/', 1)[-1]
+            if name not in branding.FONT_FILES:
+                raise ApiError(404, 'Không tìm thấy font')
+            return self.send((BASE / 'assets/fonts' / name).read_bytes(), kind='font/ttf')
         if path == '/api/health':
             with connect() as c:
                 c.execute('SELECT 1').fetchone()
@@ -413,6 +386,19 @@ class Handler(BaseHTTPRequestHandler):
             user = self.current_user(c)
             if path == '/api/state':
                 return self.send(build_state(c, user))
+            if path.startswith('/api/brand-assets/'):
+                import branding
+                asset_id = path.rsplit('/', 1)[-1]
+                if not re.fullmatch('[0-9a-f]{64}', asset_id):
+                    raise ApiError(404, 'Không tìm thấy logo')
+                logo = branding.asset(c, asset_id)
+                if not logo:
+                    raise ApiError(404, 'Không tìm thấy logo')
+                return self.send(bytes(logo['data']), kind=logo['mime'])
+            if path == '/api/catalog/preview':
+                require(user,'owner')
+                import catalog
+                return self.send(catalog.preview(sys.modules[__name__],c))
             if path in {'/api/import/status', '/api/import/demo-backup'}:
                 require(user, 'owner')
                 import live_import
@@ -420,13 +406,17 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send(live_import.status(sys.modules[__name__], c))
                 data = live_import.demo_backup(sys.modules[__name__], c)
                 return self.send(data, kind='application/octet-stream', filename='SUA-demo-before-live.sqlite3')
-            if path.startswith('/api/invoice/'):
+            if path.startswith('/api/invoice/') or path.startswith('/api/print/'):
                 self.check_dataset(c, parse_qs(urlsplit(self.path).query).get('dataset', [None])[0])
                 order = c.execute('SELECT * FROM orders WHERE id=?', (int(path.rsplit('/', 1)[1]),)).fetchone()
                 if not order:
                     raise ApiError(404, 'Không tìm thấy đơn hàng')
                 if user['role'] != 'owner' and not (user['role'] == 'cashier' and order['user_id'] == user['id']):
                     raise ApiError(403, 'Không có quyền xem đơn hàng này')
+                if path.startswith('/api/print/'):
+                    import branding
+                    auto = parse_qs(urlsplit(self.path).query).get('auto', ['0'])[0] == '1'
+                    return self.send(branding.receipt_html(sys.modules[__name__], dict(order), auto), kind='text/html; charset=utf-8')
                 return self.send(invoice(dict(order)), kind='application/pdf', filename=f"SUA-{order['id']}.pdf")
             if path in {'/api/report', '/api/export'}:
                 require(user, 'owner')
@@ -499,7 +489,7 @@ class Handler(BaseHTTPRequestHandler):
                 if path.endswith('/preview'):
                     self.check_dataset(auth)
         size = int(self.headers.get('Content-Length', 0))
-        if not 0 < size <= (24 * 1024 * 1024 if path == '/api/import/preview' else 100000):
+        if not 0 < size <= (24 * 1024 * 1024 if path == '/api/import/preview' else (3 * 1024 * 1024 if path == '/api/branding' else 100000)):
             raise ValueError('Yêu cầu quá lớn hoặc trống')
         d = json.loads(self.rfile.read(size))
         if not isinstance(d, dict):
@@ -514,8 +504,13 @@ class Handler(BaseHTTPRequestHandler):
             c.execute('BEGIN IMMEDIATE')
             user = self.current_user(c)
             self.csrf(user)
-            if path in {'/api/orders','/api/products','/api/stock','/api/refunds','/api/cakes','/api/expenses','/api/void'}:
+            if path in {'/api/orders','/api/products','/api/stock','/api/refunds','/api/cakes','/api/expenses','/api/void','/api/catalog/apply','/api/toppings'}:
                 self.check_dataset(c)
+            if path == '/api/branding':
+                require(user, 'owner')
+                import branding
+                branding.save(sys.modules[__name__], c, user, d)
+                return {}, None
             if path == '/api/logout':
                 c.execute('DELETE FROM sessions WHERE token_hash=?', (user['token_hash'],))
                 return {}, self.session_cookie('', True)
@@ -528,6 +523,14 @@ class Handler(BaseHTTPRequestHandler):
                 c.execute('DELETE FROM sessions WHERE user_id=?', (user['id'],))
                 audit(c, user, 'password.change', user['id'])
                 return {}, self.session_cookie('', True)
+            if path == '/api/catalog/apply':
+                require(user,'owner')
+                import catalog
+                return catalog.apply(sys.modules[__name__],c,user,d), None
+            if path == '/api/toppings':
+                require(user,'owner')
+                import catalog
+                return catalog.save_topping(sys.modules[__name__],c,user,d), None
             if path == '/api/orders':
                 require(user, 'owner', 'cashier')
                 key = text(d.get('request_key'), 'Mã yêu cầu', 100)
@@ -539,14 +542,8 @@ class Handler(BaseHTTPRequestHandler):
                     return {'id': previous['id'], 'replayed': True}, None
                 if not isinstance(d.get('items'), list) or not 1 <= len(d['items']) <= 200:
                     raise ValueError('Đơn hàng không hợp lệ')
-                items = []
-                for x in d['items']:
-                    product = c.execute('SELECT * FROM products WHERE id=? AND active=1', (x['id'],)).fetchone()
-                    if not product:
-                        raise ApiError(400, 'Món đã ngừng bán hoặc không tồn tại')
-                    p = dict(product)
-                    p['qty'] = quantity(x['qty'])
-                    items.append(p)
+                import catalog
+                items = [catalog.build_item(sys.modules[__name__],c,x) for x in d['items']]
                 payment = d.get('payment')
                 if payment not in {'Tiền mặt', 'Chuyển khoản'}:
                     raise ValueError('Thanh toán không hợp lệ')
@@ -558,8 +555,8 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError('Tổng tiền hoặc giảm giá không hợp lệ')
                 note = text(d.get('note', ''), 'Ghi chú', 500, False)
                 settings = c.execute('SELECT data FROM settings WHERE id=1').fetchone()[0]
-                cur = c.execute('INSERT INTO orders(created,payment,total,cost,items,user_id,request_key,fingerprint,shop_json,note,discount,subtotal) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
-                                (now(), payment, subtotal-discount, sum(p['cost'] * p['qty'] for p in items), encode(items), user['id'], key, fingerprint, settings, note, discount, subtotal))
+                cur = c.execute('INSERT INTO orders(created,payment,total,cost,items,user_id,request_key,fingerprint,shop_json,note,discount,subtotal,cost_complete) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                                (now(), payment, subtotal-discount, sum(p['cost'] * p['qty'] for p in items), encode(items), user['id'], key, fingerprint, settings, note, discount, subtotal, int(all(p['cost_known'] for p in items))))
                 audit(c, user, 'order.create', cur.lastrowid, after={'total': subtotal-discount})
                 return {'id': cur.lastrowid}, None
             if path == '/api/refunds':
@@ -579,16 +576,21 @@ class Handler(BaseHTTPRequestHandler):
                 pid = text(d.get('id'), 'Mã món', 50)
                 if not re.fullmatch('[A-Za-z0-9_-]+', pid):
                     raise ValueError('Mã món chỉ gồm chữ, số, _ và -')
+                if not isinstance(d.get('cost_known',True),bool):
+                    raise ValueError('Trạng thái giá vốn phải là giá trị có/không hợp lệ')
                 p = dict(id=pid, name=text(d.get('name'), 'Tên món', 100), category=text(d.get('category'), 'Nhóm món', 60), size=text(d.get('size'), 'Size', 20),
-                         price=money(d['price']), cost=money(d['cost']), active=1 if d.get('active', True) else 0)
+                         price=money(d['price']), cost=money(d['cost']) if d.get('cost_known', True) else 0, cost_known=1 if d.get('cost_known', True) else 0, active=1 if d.get('active', True) else 0)
                 old = c.execute('SELECT * FROM products WHERE id=?', (pid,)).fetchone()
-                c.execute('INSERT INTO products(id,name,category,size,price,cost,active) VALUES(:id,:name,:category,:size,:price,:cost,:active) ON CONFLICT(id) DO UPDATE SET name=excluded.name,category=excluded.category,size=excluded.size,price=excluded.price,cost=excluded.cost,active=excluded.active', p)
+                c.execute('INSERT INTO products(id,name,category,size,price,cost,cost_known,active) VALUES(:id,:name,:category,:size,:price,:cost,:cost_known,:active) ON CONFLICT(id) DO UPDATE SET name=excluded.name,category=excluded.category,size=excluded.size,price=excluded.price,cost=excluded.cost,cost_known=excluded.cost_known,active=excluded.active', p)
                 audit(c, user, 'product.save', pid, before=dict(old) if old else None, after=p)
-                return {}, None
+                revision = secrets.token_hex(16)
+                c.execute("INSERT OR REPLACE INTO app_metadata VALUES('dataset_id',?)", (revision,))
+                return {'dataset_id': revision}, None
             if path == '/api/settings':
                 require(user, 'owner')
-                settings = {k: text(d.get(k, ''), k, 200, k == 'name') for k in DEFAULT_SETTINGS}
+                fields = {k: text(d.get(k, ''), k, 200, k == 'name') for k in DEFAULT_SETTINGS}
                 old = json.loads(c.execute('SELECT data FROM settings WHERE id=1').fetchone()[0])
+                settings = dict(old, **fields)
                 c.execute('UPDATE settings SET data=? WHERE id=1', (encode(settings),))
                 audit(c, user, 'settings.save', 'shop', old, settings)
                 return {}, None

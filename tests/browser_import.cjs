@@ -102,9 +102,9 @@ async function main() {
 
     // Keep a paid demo transaction to verify it is archived and never counted as live revenue.
     await page.click('[data-tab="sale"]');
-    await page.locator('[data-product="CF01_M"]').click();
-    const demoPdf=await downloadTo(page,()=>page.click('#checkout'),'demo-invoice.pdf');
-    assert(fs.readFileSync(demoPdf).subarray(0,4).toString()==='%PDF');
+    await page.locator('[data-product="CF01_M"]').click();await page.click('#add-custom-drink');
+    await page.click('#checkout');
+    await page.waitForFunction(()=>!document.querySelector('[data-minus]'));
     current=await state(page);
     assert.equal(current.orders.length,1);
 
@@ -114,7 +114,7 @@ async function main() {
     await stale.goto(url);
     await stale.waitForSelector('.hero');
     await stale.click('[data-tab="sale"]');
-    await stale.locator('[data-product="CF01_M"]').click();
+    await stale.locator('[data-product="CF01_M"]').click();await stale.click('#add-custom-drink');
     assert.equal(await stale.locator('[data-minus]').count(),1);
 
     await page.click('#open-live-import');
@@ -182,9 +182,9 @@ async function main() {
     assert.equal((await state(page)).orders.length,0);
 
     await page.click('[data-tab="sale"]');
-    await page.locator('[data-product="LIVE_M"]').click();
-    const livePdf=await downloadTo(page,()=>page.click('#checkout'),'live-invoice.pdf');
-    assert.equal(fs.readFileSync(livePdf).subarray(0,4).toString(),'%PDF');
+    await page.locator('[data-product="LIVE_M"]').click();await page.click('#add-custom-drink');
+    await page.click('#checkout');
+    await page.waitForFunction(()=>!document.querySelector('[data-minus]'));
     current=await state(page);
     assert.equal(current.orders.length,1);
     assert.equal(current.orders[0].total,26000);

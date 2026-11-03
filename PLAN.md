@@ -323,3 +323,8 @@ Các nội dung này không ngăn tiếp tục thử bản phát triển, nhưng
 - [ ] Bàn giao hướng dẫn bán hàng, chốt ca, nhập kho, kiểm kê và quản lý bánh.
 
 **Hồ sơ bàn giao mục tiêu:** mã nguồn + cấu hình triển khai + migration + dữ liệu đầu kỳ đã đối soát + bộ kiểm thử/kết quả + tài liệu sử dụng + quy trình backup/restore. File PLAN này là đặc tả và lộ trình, không xác nhận các phần chưa triển khai đã hoàn thành.
+
+
+## Cập nhật menu và bill từ ảnh mới
+
+Đã bổ sung catalog 75 món/162 size, 20 mã topping (10 chung và 10 gợi ý), tính giá topping ở server, review/apply menu chủ quán, giỏ tách cấu hình, tùy chọn không in/in bill, logo tải riêng và font tiếng Việt có giấy phép. Chưa biết giá vốn thì không báo lợi nhuận bằng giá vốn 0. Đơn cũ và logo cũ giữ theo snapshot; công thức cũ chỉ liên kết khi ghép chắc chắn, kho chưa tự trừ. Các chi tiết cần chủ quán đối chiếu nằm ở MENU_REVIEW.md.

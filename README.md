@@ -1,8 +1,20 @@
 # SỨA cà phê
 
-Web app tiếng Việt tông hồng: bán hàng, phiếu PDF, kho thủ công, sổ bánh, báo cáo và quản lý nhân viên. Dữ liệu lưu SQLite; frontend HTML/CSS/JavaScript, backend Python và ReportLab.
+Web app tiếng Việt tông hồng: bán hàng kèm topping, bill/PDF tùy chọn, kho thủ công, sổ bánh, báo cáo và quản lý nhân viên. Dữ liệu lưu SQLite; frontend HTML/CSS/JavaScript, backend Python và ReportLab.
 
 **Branch công khai chỉ chứa dữ liệu mẫu giả lập** (3 món, 2 nguyên liệu), không chứa giá vốn/tồn kho/doanh thu thật từ Excel. App hiển thị nhãn BẢN DÙNG THỬ khi chạy dữ liệu mẫu. Xem [IMPORT_EXCEL.md](IMPORT_EXCEL.md) để nhập dữ liệu của quán trong workspace riêng.
+
+## Menu mới, topping và in bill
+
+Cập nhật Codespaces bằng `git pull --ff-only`, `bash install.sh`, `bash .devcontainer/restart.sh`, rồi tải lại trang app.
+
+- Chủ quán mở **Menu & công thức → Xem & áp dụng menu mới SỨA**: đối soát **75 món / 162 biến thể size, 20 topping** từ hai ảnh rồi xác nhận. Menu cũ ngừng bán, đơn cũ giữ nguyên; tồn kho không bị đặt lại. Xem [MENU_REVIEW.md](MENU_REVIEW.md) cho các chữ/giá cần đối chiếu.
+- Trong **Bán hàng**, chọn món → số ly và số phần topping trên mỗi ly → **Thêm vào đơn**. Cùng món nhưng khác topping có dòng riêng. Ví dụ Cafe Sữa M 16.000 + Kem Muối theo gợi ý 5.000 = 21.000/ly; Kem Muối chung là 6.000 theo bảng cuối menu.
+- Chọn **Không in** (mặc định) hoặc **In bill** trước thanh toán. Không in chỉ lưu đơn; không tự tải PDF. In bill mở tab và hộp thoại in của trình duyệt; chọn máy in/khổ giấy phù hợp. Có thể in lại hoặc tải PDF trong Đơn hàng.
+- **Cài đặt & nhân viên → Logo SỨA Café & kiểu chữ**: chọn ảnh logo gốc PNG/JPG tối đa 2 MB, chọn kiểu chữ rồi lưu. Logo được giữ riêng trong SQLite, không đưa lên repo; dùng trên app và các bill mới. Bill cũ giữ logo theo snapshot. Font Great Vibes, Lobster và Be Vietnam Pro đi kèm giấy phép, hỗ trợ tiếng Việt; đây là bộ chữ theo phong cách ảnh, không khẳng định đúng tên font gốc.
+- Chỉ kế thừa giá vốn khi ghép khớp chắc chắn tên/size từ dữ liệu đang có. Món/topping thiếu cost được đánh dấu **Chưa có giá vốn**; báo cáo đơn liên quan hiện **Chưa đủ giá vốn**. Bổ sung cost trước khi bán; không tự tính lại cost của đơn đã chốt.
+
+Nếu đang chuyển từ demo sang dữ liệu thật, nhập Excel trước rồi áp dụng menu mới trên bộ dữ liệu thật. Menu ảnh chỉ chứa giá bán, không suy ra công thức hoặc lượng nguyên liệu/topping. Kho vẫn nhập/xuất thủ công.
 
 ## Đã chạy demo? Cập nhật và nhập dữ liệu thật
 
@@ -107,9 +119,10 @@ node --check static/app.js
 # Môi trường đã có Playwright + Chromium:
 node tests/browser_smoke.cjs
 node tests/browser_import.cjs
+node tests/browser_toppings.cjs
 ```
 
-29 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, hoàn ngày khác, báo cáo/CSV, hủy sổ/chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
+45 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, hoàn ngày khác, báo cáo/CSV, hủy sổ/chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
 
 Luồng nhập đã kiểm tra end-to-end bằng XLSX giả lập và parser đã đọc được hai workbook thật trong workspace riêng; không commit dữ liệu nguồn. Cấu hình Codespaces chưa được tạo/thử trên một Codespace GitHub thật trong phiên này; đã kiểm thử đường dẫn cài/start và mô phỏng Origin của cổng chuyển tiếp. Launcher Windows chưa chạy thử trên Windows.
 
