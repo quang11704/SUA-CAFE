@@ -137,6 +137,8 @@ def invoice(app, order):
         line(f"{item['name']} · {item['size']}", 10)
         for topping in item.get('toppings', []):
             line(f"+ {topping['name']} × {topping['qty']} phần/ly (+{topping['price']:,} đ/phần)", 8)
+        if item.get('note'):
+            line('Ghi chú ly: '+item['note'],8)
         line(f"{item['qty']} × {app.money(item['price']):,} = {app.money(item['qty'] * item['price']):,} đ")
     if order.get('discount'):
         line(f"Giảm giá: {order['discount']:,} đ")
@@ -156,6 +158,8 @@ def receipt_html(app, order, auto=False):
     rows = []
     for item in json.loads(order['items']):
         additions = ''.join(f'<div class="addition">+ {esc(t["name"])} × {t["qty"]} phần/ly · +{fmt(t["price"])}/phần</div>' for t in item.get('toppings', []))
+        if item.get('note'):
+            additions += '<div class="addition">Ghi chú ly: '+esc(item['note'])+'</div>'
         rows.append(f'<section class="item"><strong>{esc(item["name"])} · {esc(item["size"])}</strong>{additions}<div class="amount"><span>{item["qty"]} × {fmt(item["price"])}</span><span>{fmt(item["qty"]*item["price"])}</span></div></section>')
     logo = f'<img class="logo" src="/api/brand-assets/{esc(shop["logo_id"])}" alt="Logo {esc(shop["name"])}">' if shop.get('logo_id') else ''
     note = f'<p>Ghi chú: {esc(order["note"])}</p>' if order.get('note') else ''

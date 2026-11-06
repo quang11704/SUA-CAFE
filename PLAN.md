@@ -328,3 +328,8 @@ Các nội dung này không ngăn tiếp tục thử bản phát triển, nhưng
 ## Cập nhật menu và bill từ ảnh mới
 
 Đã bổ sung catalog 75 món/162 size, 20 mã topping (10 chung và 10 gợi ý), tính giá topping ở server, review/apply menu chủ quán, giỏ tách cấu hình, tùy chọn không in/in bill, logo tải riêng và font tiếng Việt có giấy phép. Chưa biết giá vốn thì không báo lợi nhuận bằng giá vốn 0. Đơn cũ và logo cũ giữ theo snapshot; công thức cũ chỉ liên kết khi ghép chắc chắn, kho chưa tự trừ. Các chi tiết cần chủ quán đối chiếu nằm ở MENU_REVIEW.md.
+
+
+## In tem CLabel 50×30 mm
+
+Đã bổ sung in tem theo số ly, topping/ghi chú riêng, lựa chọn độc lập với bill, xem trước/in bù trong đơn hàng, chỉnh khổ/lề/chữ và bảo vệ quyền/dataset. Dùng driver Windows qua trình duyệt; chưa tích hợp USB/Bluetooth trực tiếp hoặc kiểm chứng phần cứng cụ thể. Nội dung vượt khổ không tự in khi không vừa ở cỡ chữ tối thiểu.

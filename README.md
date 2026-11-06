@@ -4,6 +4,18 @@ Web app tiếng Việt tông hồng: bán hàng kèm topping, bill/PDF tùy ch�
 
 **Branch công khai chỉ chứa dữ liệu mẫu giả lập** (3 món, 2 nguyên liệu), không chứa giá vốn/tồn kho/doanh thu thật từ Excel. App hiển thị nhãn BẢN DÙNG THỬ khi chạy dữ liệu mẫu. Xem [IMPORT_EXCEL.md](IMPORT_EXCEL.md) để nhập dữ liệu của quán trong workspace riêng.
 
+## In tem dán ly CLabel 50×30 mm
+
+Trong **Bán hàng**, nhập ghi chú riêng từng lựa chọn ly (ít đá, mức đường…) nếu cần. Chọn **Tem dán ly → In tem từng ly** trước thanh toán. In bill và in tem là hai lựa chọn độc lập, mặc định đều không in. Với cùng món/topping nhưng ghi chú khác nhau, app giữ thành dòng riêng.
+
+Mỗi ly tạo một tem **50×30 mm**, gồm tên quán, món/size, topping, ghi chú ly/đơn, mã đơn, số thứ tự ly/tổng ly, giờ bán và giá mỗi ly gồm topping (trước giảm giá toàn đơn). Trang in có thể chọn phạm vi để in bù, tối đa 200 tem/lượt. Trong **Đơn hàng → In tem**, có thể xem trước và in lại; không ghi thêm đơn/doanh thu.
+
+**Máy CLabel:** cài driver chính thức phù hợp model và kết nối máy với Windows để máy xuất hiện trong danh sách máy in của Chrome/Edge. Chọn máy CLabel, giấy **50×30 mm**, tỷ lệ **100%**, lề **0/None** trong hộp thoại trình duyệt và tắt Headers/Footers. App đã chừa lề trong tem mặc định 1 mm. Nếu máy không xuất hiện hoặc chỉ dùng ứng dụng Bluetooth riêng của CLabel, cần xác định model để chọn cách kết nối; bản này chưa gửi lệnh trực tiếp USB/Bluetooth/TSPL.
+
+Chủ quán chỉnh khổ/lề/cỡ chữ tại **Cài đặt & nhân viên → Máy in tem CLabel**. Có thể chỉnh tạm trên trang xem tem. Nội dung dài được giảm cỡ chữ đến 6 pt; nếu vẫn không vừa, app cảnh báo và không tự mở lệnh in để tránh cắt mất chữ, cần tăng khổ tem hoặc rút gọn ghi chú. Driver vẫn phải chọn đúng khổ thực tế.
+
+Đã kiểm thử trình duyệt và xuất PDF đúng 3 trang 50×30 cho 3 ly. Chưa kiểm thử trên máy CLabel vật lý của quán. Lần đầu nên in thử 1 tem và kiểm tra canh lề/cảm biến tem theo hướng dẫn model.
+
 ## Chỉ mở Ports để dùng app
 
 Codespaces tự chuẩn bị thư viện và chạy SỨA khi máy khởi động hoặc bạn kết nối lại. Server được giám sát: nếu tiến trình app dừng, nó tự chạy lại với thời gian chờ tăng dần; không tạo server trùng khi cả hai hook cùng chạy. Khi mã backend thay đổi rồi kết nối lại, app được khởi động lại bằng mã mới. Không tự pull/ghi đè thay đổi Git và không đặt lại dữ liệu.
@@ -134,9 +146,10 @@ node --check static/app.js
 node tests/browser_smoke.cjs
 node tests/browser_import.cjs
 node tests/browser_toppings.cjs
+node tests/browser_labels.cjs
 ```
 
-49 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, tự khởi động/khôi phục tiến trình/không tạo trùng/không dừng chương trình khác, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, hoàn ngày khác, báo cáo/CSV, hủy sổ/chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
+55 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, tự khởi động/khôi phục tiến trình/không tạo trùng/không dừng chương trình khác, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, hoàn ngày khác, báo cáo/CSV, hủy sổ/chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
 
 Luồng nhập đã kiểm tra end-to-end bằng XLSX giả lập và parser đã đọc được hai workbook thật trong workspace riêng; không commit dữ liệu nguồn. Cấu hình Codespaces chưa được tạo/thử trên một Codespace GitHub thật trong phiên này; đã kiểm thử đường dẫn cài/start và mô phỏng Origin của cổng chuyển tiếp. Launcher Windows chưa chạy thử trên Windows.
 

@@ -182,6 +182,7 @@ def build_item(app, c, line):
     item = dict(row)
     item['qty'] = app.quantity(line['qty'])
     item['base_price'] = item['price']
+    item['note'] = app.text(line.get('note',''), 'Ghi chú từng ly', 120, False)
     modifiers = line.get('toppings',[])
     if not isinstance(modifiers,list) or len(modifiers)>30:
         raise ValueError('Tối đa 30 loại topping trên một dòng món')

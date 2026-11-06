@@ -363,7 +363,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def get(self):
         path = urlsplit(self.path).path
-        paths = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/receipt.css': 'receipt.css', '/receipt.js': 'receipt.js'}
+        paths = {'/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/receipt.css': 'receipt.css', '/receipt.js': 'receipt.js', '/labels.css': 'labels.css', '/labels.js': 'labels.js'}
         if path in paths:
             f = BASE / 'static' / paths[path]
             return self.send(f.read_bytes(), kind={'html': 'text/html; charset=utf-8', 'js': 'text/javascript; charset=utf-8', 'css': 'text/css'}[f.suffix[1:]])
@@ -406,13 +406,17 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send(live_import.status(sys.modules[__name__], c))
                 data = live_import.demo_backup(sys.modules[__name__], c)
                 return self.send(data, kind='application/octet-stream', filename='SUA-demo-before-live.sqlite3')
-            if path.startswith('/api/invoice/') or path.startswith('/api/print/'):
+            if path.startswith('/api/invoice/') or path.startswith('/api/print/') or path.startswith('/api/labels/'):
                 self.check_dataset(c, parse_qs(urlsplit(self.path).query).get('dataset', [None])[0])
                 order = c.execute('SELECT * FROM orders WHERE id=?', (int(path.rsplit('/', 1)[1]),)).fetchone()
                 if not order:
                     raise ApiError(404, 'Không tìm thấy đơn hàng')
                 if user['role'] != 'owner' and not (user['role'] == 'cashier' and order['user_id'] == user['id']):
                     raise ApiError(403, 'Không có quyền xem đơn hàng này')
+                if path.startswith('/api/labels/'):
+                    import labels
+                    settings = json.loads(c.execute('SELECT data FROM settings WHERE id=1').fetchone()[0])
+                    return self.send(labels.render(sys.modules[__name__], dict(order), settings, parse_qs(urlsplit(self.path).query)), kind='text/html; charset=utf-8')
                 if path.startswith('/api/print/'):
                     import branding
                     auto = parse_qs(urlsplit(self.path).query).get('auto', ['0'])[0] == '1'
@@ -506,6 +510,14 @@ class Handler(BaseHTTPRequestHandler):
             self.csrf(user)
             if path in {'/api/orders','/api/products','/api/stock','/api/refunds','/api/cakes','/api/expenses','/api/void','/api/catalog/apply','/api/toppings'}:
                 self.check_dataset(c)
+            if path == '/api/label-settings':
+                require(user, 'owner')
+                import labels
+                previous = json.loads(c.execute('SELECT data FROM settings WHERE id=1').fetchone()[0])
+                updated = dict(previous, label_printer=labels.options(d))
+                c.execute('UPDATE settings SET data=? WHERE id=1', (encode(updated),))
+                audit(c, user, 'labels.settings', 'shop', before=previous.get('label_printer'), after=updated['label_printer'])
+                return {}, None
             if path == '/api/branding':
                 require(user, 'owner')
                 import branding
