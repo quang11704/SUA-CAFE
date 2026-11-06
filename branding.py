@@ -13,7 +13,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-FONT_FILES = {'GreatVibes-Regular.ttf', 'Lobster-Regular.ttf', 'BeVietnamPro-Regular.ttf', 'DejaVuSans.ttf'}
+FONT_FILES = {'BeVietnamPro-SemiBold.ttf', 'GreatVibes-Regular.ttf', 'Lobster-Regular.ttf', 'BeVietnamPro-Regular.ttf', 'DejaVuSans.ttf'}
 
 
 def init_schema(c):
@@ -75,11 +75,11 @@ def _font(app, name, file):
 
 def invoice(app, order):
     _font(app, 'SuaBody', 'BeVietnamPro-Regular.ttf')
-    _font(app, 'SuaScript', 'GreatVibes-Regular.ttf')
+    _font(app, 'SuaBillBold', 'BeVietnamPro-SemiBold.ttf')
     _font(app, 'SuaClassic', 'DejaVuSans.ttf')
     shop = json.loads(order['shop_json']) if order.get('shop_json') else app.DEFAULT_SETTINGS
-    font = 'SuaBody' if shop.get('brand_font', 'script') == 'script' else 'SuaClassic'
-    logo_font = 'SuaScript' if shop.get('brand_font', 'script') == 'script' else 'SuaClassic'
+    font = 'SuaBody'
+    logo_font = 'SuaBillBold'
     width, height = 226.77, 700  # 80 mm wide, long bills paginate.
     buf = io.BytesIO()
     pdf = canvas.Canvas(buf, pagesize=(width, height))
@@ -125,16 +125,16 @@ def invoice(app, order):
                 y -= size+7
                 remaining = remaining[end:]
 
-    line(shop['name'], 26 if logo_font == 'SuaScript' else 14, logo_font, True)
+    line(shop['name'], 16, logo_font, True)
     for key in ['address', 'phone']:
         if shop.get(key):
             line(shop[key], center=True)
     line('PHIẾU THANH TOÁN', 10, center=True)
-    line(f"Mã #{order['id']} · {order['created'][:16]}", center=True)
+    line(f"Mã #{order['id']} · {order['created'][:16].replace('T', ' ')}", center=True)
     line(f"Thanh toán: {order['payment']}")
     line()
     for item in json.loads(order['items']):
-        line(f"{item['name']} · {item['size']}", 10)
+        line(f"{item['name']} · {item['size']}", 10, 'SuaBillBold')
         for topping in item.get('toppings', []):
             line(f"+ {topping['name']} × {topping['qty']} phần/ly (+{topping['price']:,} đ/phần)", 8)
         if item.get('note'):
@@ -142,7 +142,7 @@ def invoice(app, order):
         line(f"{item['qty']} × {app.money(item['price']):,} = {app.money(item['qty'] * item['price']):,} đ")
     if order.get('discount'):
         line(f"Giảm giá: {order['discount']:,} đ")
-    line(f"TỔNG CỘNG: {app.money(order['total']):,} đ", 12)
+    line(f"TỔNG CỘNG: {app.money(order['total']):,} đ", 12, 'SuaBillBold')
     if order.get('note'):
         line('Ghi chú: ' + order['note'])
     line(shop.get('footer', 'Cảm ơn bạn đã chọn chúng tôi!'), center=True)
@@ -164,4 +164,6 @@ def receipt_html(app, order, auto=False):
     logo = f'<img class="logo" src="/api/brand-assets/{esc(shop["logo_id"])}" alt="Logo {esc(shop["name"])}">' if shop.get('logo_id') else ''
     note = f'<p>Ghi chú: {esc(order["note"])}</p>' if order.get('note') else ''
     discount = f'<p class="amount"><span>Giảm giá</span><span>{fmt(order["discount"])}</span></p>' if order.get('discount') else ''
-    return (f'''<!doctype html><html lang="vi" data-brand-font="{esc(shop.get('brand_font','script'))}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bill SỨA #{order['id']}</title><link rel="stylesheet" href="/receipt.css"><body data-auto-print="{'1' if auto else '0'}"><div class="tools"><button id="print-receipt">In bill</button><button id="close-receipt">Đóng</button></div><main>{logo}<h1>{esc(shop['name'])}</h1><p class="center">{esc(shop.get('address',''))}<br>{esc(shop.get('phone',''))}</p><h2>PHIẾU THANH TOÁN</h2><p class="center">#{order['id']} · {esc(order['created'][:16])}</p><p>Thanh toán: {esc(order['payment'])}</p>{''.join(rows)}{discount}<p class="amount total"><strong>Tổng cộng</strong><strong>{fmt(order['total'])}</strong></p>{note}<p class="center">{esc(shop.get('footer','Cảm ơn bạn đã chọn chúng tôi!'))}</p><p class="center legal">Phiếu thanh toán, không phải hóa đơn thuế.</p></main><script src="/receipt.js"></script></body></html>''').encode('utf-8')
+    contact_lines = '<br>'.join(esc(shop[key]) for key in ['address', 'phone'] if shop.get(key))
+    contact = '<p class="center">'+contact_lines+'</p>' if contact_lines else ''
+    return (f'''<!doctype html><html lang="vi" data-brand-font="{esc(shop.get('brand_font','script'))}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bill SỨA #{order['id']}</title><link rel="stylesheet" href="/receipt.css"><body data-auto-print="{'1' if auto else '0'}"><div class="tools"><button id="print-receipt">In bill</button><button id="close-receipt">Đóng</button></div><main>{logo}<h1>{esc(shop['name'])}</h1>{contact}<h2>PHIẾU THANH TOÁN</h2><p class="center">#{order['id']} · {esc(order['created'][:16].replace('T', ' '))}</p><p>Thanh toán: {esc(order['payment'])}</p>{''.join(rows)}{discount}<p class="amount total"><strong>Tổng cộng</strong><strong>{fmt(order['total'])}</strong></p>{note}<p class="center">{esc(shop.get('footer','Cảm ơn bạn đã chọn chúng tôi!'))}</p><p class="center legal">Phiếu thanh toán, không phải hóa đơn thuế.</p></main><script src="/receipt.js"></script></body></html>''').encode('utf-8')

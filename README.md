@@ -4,6 +4,12 @@ Web app tiếng Việt tông hồng: bán hàng kèm topping, bill/PDF tùy ch�
 
 **Branch công khai chỉ chứa dữ liệu mẫu giả lập** (3 món, 2 nguyên liệu), không chứa giá vốn/tồn kho/doanh thu thật từ Excel. App hiển thị nhãn BẢN DÙNG THỬ khi chạy dữ liệu mẫu. Xem [IMPORT_EXCEL.md](IMPORT_EXCEL.md) để nhập dữ liệu của quán trong workspace riêng.
 
+## Danh sách đơn hàng và bill rõ chữ
+
+Mục **Đơn hàng** hiển thị trực tiếp tên món, size, số lượng, topping và ghi chú từng ly. Tổng số đơn và tổng tiền được tính theo đúng tìm kiếm/ngày/trạng thái đang chọn. Tổng tiền đơn là sau giảm giá, trước hoàn; tiền đã hoàn và số còn lại có chỉ tiêu riêng. Đây là tổng theo các đơn trong danh sách, không thay thế báo cáo dòng tiền theo ngày hoàn.
+
+Bill HTML và PDF dùng **Be Vietnam Pro** thường/semibold để dễ đọc trên giấy nhiệt; không dùng chữ viết tay cho tên quán trên bill. Logo vẫn giữ theo snapshot đơn. Lựa chọn chữ thương hiệu trong Cài đặt áp dụng cho giao diện app.
+
 ## In tem dán ly CLabel 50×30 mm
 
 Trong **Bán hàng**, nhập ghi chú riêng từng lựa chọn ly (ít đá, mức đường…) nếu cần. Chọn **Tem dán ly → In tem từng ly** trước thanh toán. In bill và in tem là hai lựa chọn độc lập, mặc định đều không in. Với cùng món/topping nhưng ghi chú khác nhau, app giữ thành dòng riêng.
@@ -147,6 +153,7 @@ node tests/browser_smoke.cjs
 node tests/browser_import.cjs
 node tests/browser_toppings.cjs
 node tests/browser_labels.cjs
+node tests/browser_orders.cjs
 ```
 
 55 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, tự khởi động/khôi phục tiến trình/không tạo trùng/không dừng chương trình khác, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, hoàn ngày khác, báo cáo/CSV, hủy sổ/chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
