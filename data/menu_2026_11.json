@@ -1,0 +1,1413 @@
+{
+  "version": "2026-11-menu",
+  "products": [
+    {
+      "id": "S202611_TS01_M",
+      "name": "Trà Sữa Truyền Thống",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TS01_L",
+      "name": "Trà Sữa Truyền Thống",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TS02_M",
+      "name": "Trà Sữa Lài",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TS02_L",
+      "name": "Trà Sữa Lài",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TS03_M",
+      "name": "Trà Sữa Socola",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TS03_L",
+      "name": "Trà Sữa Socola",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TS04_M",
+      "name": "Trà Sữa Matcha",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TS04_L",
+      "name": "Trà Sữa Matcha",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TS05_M",
+      "name": "Trà Sữa Kem Phô Mai",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TS05_L",
+      "name": "Trà Sữa Kem Phô Mai",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TS06_M",
+      "name": "Trà Sữa Kem Cheese",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TS06_L",
+      "name": "Trà Sữa Kem Cheese",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TS07_M",
+      "name": "Trà Sữa Kem Trứng",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TS07_L",
+      "name": "Trà Sữa Kem Trứng",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TS08_M",
+      "name": "Trà Sữa Siêu Phô Mai",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TS08_L",
+      "name": "Trà Sữa Siêu Phô Mai",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TS09_M",
+      "name": "Trà Sữa Kem Trứng Dừa Nướng",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TS09_L",
+      "name": "Trà Sữa Kem Trứng Dừa Nướng",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TS10_M",
+      "name": "Lục Trà Sữa Xoài",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TS10_L",
+      "name": "Lục Trà Sữa Xoài",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TS11_M",
+      "name": "Lài Sữa Dẻ Cười",
+      "category": "Trà Sữa",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TS11_L",
+      "name": "Lài Sữa Dẻ Cười",
+      "category": "Trà Sữa",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_CF01_M",
+      "name": "Cafe Đen",
+      "category": "Cà Phê",
+      "size": "M",
+      "price": 15000
+    },
+    {
+      "id": "S202611_CF01_L",
+      "name": "Cafe Đen",
+      "category": "Cà Phê",
+      "size": "L",
+      "price": 18000
+    },
+    {
+      "id": "S202611_CF02_M",
+      "name": "Cafe Sữa",
+      "category": "Cà Phê",
+      "size": "M",
+      "price": 16000
+    },
+    {
+      "id": "S202611_CF02_L",
+      "name": "Cafe Sữa",
+      "category": "Cà Phê",
+      "size": "L",
+      "price": 20000
+    },
+    {
+      "id": "S202611_CF03_M",
+      "name": "Cafe Sữa Dừa",
+      "category": "Cà Phê",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_CF03_L",
+      "name": "Cafe Sữa Dừa",
+      "category": "Cà Phê",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_CF04_M",
+      "name": "Cafe Caramel",
+      "category": "Cà Phê",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_CF04_L",
+      "name": "Cafe Caramel",
+      "category": "Cà Phê",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_CF05_M",
+      "name": "Cafe Dalgonal",
+      "category": "Cà Phê",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_CF05_L",
+      "name": "Cafe Dalgonal",
+      "category": "Cà Phê",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_CF06_M",
+      "name": "Cafe Cốt Dừa Xay",
+      "category": "Cà Phê",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_CF06_L",
+      "name": "Cafe Cốt Dừa Xay",
+      "category": "Cà Phê",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_CF07_M",
+      "name": "Cafe Sữa Tươi",
+      "category": "Cà Phê",
+      "size": "M",
+      "price": 18000
+    },
+    {
+      "id": "S202611_CF07_L",
+      "name": "Cafe Sữa Tươi",
+      "category": "Cà Phê",
+      "size": "L",
+      "price": 22000
+    },
+    {
+      "id": "S202611_CF08_M",
+      "name": "Bạc Xỉu",
+      "category": "Cà Phê",
+      "size": "M",
+      "price": 18000
+    },
+    {
+      "id": "S202611_CF08_L",
+      "name": "Bạc Xỉu",
+      "category": "Cà Phê",
+      "size": "L",
+      "price": 22000
+    },
+    {
+      "id": "S202611_CF09_M",
+      "name": "Phindi Hạnh Nhân",
+      "category": "Cà Phê",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_CF09_L",
+      "name": "Phindi Hạnh Nhân",
+      "category": "Cà Phê",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_MC01_M",
+      "name": "Matcha Latte",
+      "category": "Matcha",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_MC01_L",
+      "name": "Matcha Latte",
+      "category": "Matcha",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_MC02_M",
+      "name": "Matcha Coldwhisk",
+      "category": "Matcha",
+      "size": "M",
+      "price": 28000
+    },
+    {
+      "id": "S202611_MC02_L",
+      "name": "Matcha Coldwhisk",
+      "category": "Matcha",
+      "size": "L",
+      "price": 32000
+    },
+    {
+      "id": "S202611_MC03_M",
+      "name": "Matcha Oreo",
+      "category": "Matcha",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_MC03_L",
+      "name": "Matcha Oreo",
+      "category": "Matcha",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_MC04_M",
+      "name": "Matcha Choco Crack",
+      "category": "Matcha",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_MC04_L",
+      "name": "Matcha Choco Crack",
+      "category": "Matcha",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_MC05_M",
+      "name": "Matcha Dâu",
+      "category": "Matcha",
+      "size": "M",
+      "price": 28000
+    },
+    {
+      "id": "S202611_MC05_L",
+      "name": "Matcha Dâu",
+      "category": "Matcha",
+      "size": "L",
+      "price": 32000
+    },
+    {
+      "id": "S202611_MC06_M",
+      "name": "Matcha Việt Quất",
+      "category": "Matcha",
+      "size": "M",
+      "price": 28000
+    },
+    {
+      "id": "S202611_MC06_L",
+      "name": "Matcha Việt Quất",
+      "category": "Matcha",
+      "size": "L",
+      "price": 32000
+    },
+    {
+      "id": "S202611_MC07_M",
+      "name": "Matcha Xoài",
+      "category": "Matcha",
+      "size": "M",
+      "price": 28000
+    },
+    {
+      "id": "S202611_MC07_L",
+      "name": "Matcha Xoài",
+      "category": "Matcha",
+      "size": "L",
+      "price": 32000
+    },
+    {
+      "id": "S202611_MC08_M",
+      "name": "Matcha Chuối",
+      "category": "Matcha",
+      "size": "M",
+      "price": 28000
+    },
+    {
+      "id": "S202611_MC08_L",
+      "name": "Matcha Chuối",
+      "category": "Matcha",
+      "size": "L",
+      "price": 32000
+    },
+    {
+      "id": "S202611_MC09_M",
+      "name": "Matcha Caramel",
+      "category": "Matcha",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_MC09_L",
+      "name": "Matcha Caramel",
+      "category": "Matcha",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_CC01_M",
+      "name": "Cacao Sữa Đá",
+      "category": "Cacao",
+      "size": "M",
+      "price": 18000
+    },
+    {
+      "id": "S202611_CC01_L",
+      "name": "Cacao Sữa Đá",
+      "category": "Cacao",
+      "size": "L",
+      "price": 22000
+    },
+    {
+      "id": "S202611_CC02_M",
+      "name": "Cacao Bạc Hà",
+      "category": "Cacao",
+      "size": "M",
+      "price": 24000
+    },
+    {
+      "id": "S202611_CC02_L",
+      "name": "Cacao Bạc Hà",
+      "category": "Cacao",
+      "size": "L",
+      "price": 28000
+    },
+    {
+      "id": "S202611_CC03_M",
+      "name": "Cacao Latte",
+      "category": "Cacao",
+      "size": "M",
+      "price": 22000
+    },
+    {
+      "id": "S202611_CC03_L",
+      "name": "Cacao Latte",
+      "category": "Cacao",
+      "size": "L",
+      "price": 27000
+    },
+    {
+      "id": "S202611_CC04_M",
+      "name": "Cacao Oreo",
+      "category": "Cacao",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_CC04_L",
+      "name": "Cacao Oreo",
+      "category": "Cacao",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_CC05_M",
+      "name": "Cacao Caramel",
+      "category": "Cacao",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_CC05_L",
+      "name": "Cacao Caramel",
+      "category": "Cacao",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_SC01_L",
+      "name": "Sữa Chua Dâu",
+      "category": "Sữa Chua",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SC02_L",
+      "name": "Sữa Chua Việt Quất",
+      "category": "Sữa Chua",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SC03_L",
+      "name": "Sữa Chua Dưa Lưới",
+      "category": "Sữa Chua",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SC04_L",
+      "name": "Sữa Chua Đào",
+      "category": "Sữa Chua",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SC05_L",
+      "name": "Sữa Chua Xoài",
+      "category": "Sữa Chua",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SC06_L",
+      "name": "Sữa Chua Sấy Dâu",
+      "category": "Sữa Chua",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_SC07_L",
+      "name": "Sữa Chua Sấy Việt Quất",
+      "category": "Sữa Chua",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT01_M",
+      "name": "Hồng Trà",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 10000
+    },
+    {
+      "id": "S202611_TT01_L",
+      "name": "Hồng Trà",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 15000
+    },
+    {
+      "id": "S202611_TT01_XL",
+      "name": "Hồng Trà",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT02_M",
+      "name": "Hồng Trà Kem Cheese",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 15000
+    },
+    {
+      "id": "S202611_TT02_L",
+      "name": "Hồng Trà Kem Cheese",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT02_XL",
+      "name": "Hồng Trà Kem Cheese",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TT03_M",
+      "name": "Trà Vải",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT03_L",
+      "name": "Trà Vải",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT03_XL",
+      "name": "Trà Vải",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT04_M",
+      "name": "Trà Đào",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT04_L",
+      "name": "Trà Đào",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT04_XL",
+      "name": "Trà Đào",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT05_M",
+      "name": "Trà Dâu",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT05_L",
+      "name": "Trà Dâu",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT05_XL",
+      "name": "Trà Dâu",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT06_M",
+      "name": "Trà Việt Quất",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT06_L",
+      "name": "Trà Việt Quất",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT06_XL",
+      "name": "Trà Việt Quất",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT07_M",
+      "name": "Trà Tứ Quý",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT07_L",
+      "name": "Trà Tứ Quý",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TT07_XL",
+      "name": "Trà Tứ Quý",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 40000
+    },
+    {
+      "id": "S202611_TT08_M",
+      "name": "Trà Sen Vàng",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT08_L",
+      "name": "Trà Sen Vàng",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TT08_XL",
+      "name": "Trà Sen Vàng",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 40000
+    },
+    {
+      "id": "S202611_TT09_M",
+      "name": "Trà Lựu Đỏ",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT09_L",
+      "name": "Trà Lựu Đỏ",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT09_XL",
+      "name": "Trà Lựu Đỏ",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT10_M",
+      "name": "Trà Lài Đác Thơm",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT10_L",
+      "name": "Trà Lài Đác Thơm",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TT10_XL",
+      "name": "Trà Lài Đác Thơm",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 40000
+    },
+    {
+      "id": "S202611_TT11_M",
+      "name": "Trà Hibiscus",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT11_L",
+      "name": "Trà Hibiscus",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT11_XL",
+      "name": "Trà Hibiscus",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT12_M",
+      "name": "Trà Đào Hibiscus",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT12_L",
+      "name": "Trà Đào Hibiscus",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TT12_XL",
+      "name": "Trà Đào Hibiscus",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 40000
+    },
+    {
+      "id": "S202611_TT13_M",
+      "name": "Trà Dưa Lưới",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT13_L",
+      "name": "Trà Dưa Lưới",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT13_XL",
+      "name": "Trà Dưa Lưới",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT14_M",
+      "name": "Trà Trái Cây Nhiệt Đới",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT14_L",
+      "name": "Trà Trái Cây Nhiệt Đới",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT14_XL",
+      "name": "Trà Trái Cây Nhiệt Đới",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT15_M",
+      "name": "Trà Mãng Cầu",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT15_L",
+      "name": "Trà Mãng Cầu",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT15_XL",
+      "name": "Trà Mãng Cầu",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT16_M",
+      "name": "Ô Long Bí Đao",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_TT16_L",
+      "name": "Ô Long Bí Đao",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT16_XL",
+      "name": "Ô Long Bí Đao",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT17_M",
+      "name": "Trà Nhãn Khúc Bạch Phô Mai",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TT17_L",
+      "name": "Trà Nhãn Khúc Bạch Phô Mai",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT17_XL",
+      "name": "Trà Nhãn Khúc Bạch Phô Mai",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 40000
+    },
+    {
+      "id": "S202611_TT18_M",
+      "name": "Trà Quýt Jeju",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TT18_L",
+      "name": "Trà Quýt Jeju",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_TT18_XL",
+      "name": "Trà Quýt Jeju",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 45000
+    },
+    {
+      "id": "S202611_TT19_M",
+      "name": "Trà Xoài Kem Cheese",
+      "category": "Trà Trái Cây",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_TT19_L",
+      "name": "Trà Xoài Kem Cheese",
+      "category": "Trà Trái Cây",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_TT19_XL",
+      "name": "Trà Xoài Kem Cheese",
+      "category": "Trà Trái Cây",
+      "size": "XL",
+      "price": 40000
+    },
+    {
+      "id": "S202611_DX01_M",
+      "name": "Cacao Đá Xay",
+      "category": "Đá Xay",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_DX01_L",
+      "name": "Cacao Đá Xay",
+      "category": "Đá Xay",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_DX02_M",
+      "name": "Việt Quất Đá Xay",
+      "category": "Đá Xay",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_DX02_L",
+      "name": "Việt Quất Đá Xay",
+      "category": "Đá Xay",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_DX03_M",
+      "name": "Matcha Đá Xay",
+      "category": "Đá Xay",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_DX03_L",
+      "name": "Matcha Đá Xay",
+      "category": "Đá Xay",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_DX04_M",
+      "name": "Caramel Đá Xay",
+      "category": "Đá Xay",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_DX04_L",
+      "name": "Caramel Đá Xay",
+      "category": "Đá Xay",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_DX05_M",
+      "name": "Choco Đá Xay",
+      "category": "Đá Xay",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_DX05_L",
+      "name": "Choco Đá Xay",
+      "category": "Đá Xay",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP01_M",
+      "name": "Sữa Dâu Thăng Hoa",
+      "category": "Special",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SP01_L",
+      "name": "Sữa Dâu Thăng Hoa",
+      "category": "Special",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP02_M",
+      "name": "Sữa Tươi Trân Châu",
+      "category": "Special",
+      "size": "M",
+      "price": 20000
+    },
+    {
+      "id": "S202611_SP02_L",
+      "name": "Sữa Tươi Trân Châu",
+      "category": "Special",
+      "size": "L",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SP03_M",
+      "name": "Dâu Latte",
+      "category": "Special",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SP03_L",
+      "name": "Dâu Latte",
+      "category": "Special",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP04_M",
+      "name": "Dâu Latte Kem Dâu",
+      "category": "Special",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SP04_L",
+      "name": "Dâu Latte Kem Dâu",
+      "category": "Special",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP05_M",
+      "name": "Khoai Môn Latte",
+      "category": "Special",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SP05_L",
+      "name": "Khoai Môn Latte",
+      "category": "Special",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP06_M",
+      "name": "Sen Dừa Lạnh",
+      "category": "Special",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP06_L",
+      "name": "Sen Dừa Lạnh",
+      "category": "Special",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_SP07_M",
+      "name": "Milo Dầm",
+      "category": "Special",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SP07_L",
+      "name": "Milo Dầm",
+      "category": "Special",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP08_M",
+      "name": "Nhãn Dừa Bồng Tuyết",
+      "category": "Special",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP08_L",
+      "name": "Nhãn Dừa Bồng Tuyết",
+      "category": "Special",
+      "size": "L",
+      "price": 35000
+    },
+    {
+      "id": "S202611_SP09_M",
+      "name": "Dừa Kem Dẻ Cười",
+      "category": "Special",
+      "size": "M",
+      "price": 25000
+    },
+    {
+      "id": "S202611_SP09_L",
+      "name": "Dừa Kem Dẻ Cười",
+      "category": "Special",
+      "size": "L",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP10_M",
+      "name": "Sữa Chuối Socola",
+      "category": "Special",
+      "size": "M",
+      "price": 30000
+    },
+    {
+      "id": "S202611_SP10_L",
+      "name": "Sữa Chuối Socola",
+      "category": "Special",
+      "size": "L",
+      "price": 35000
+    }
+  ],
+  "toppings": [
+    {
+      "id": "TOP_PHO_MAI_JERRRY",
+      "name": "Phô Mai Jerrry",
+      "price": 10000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_TRAN_CHAU_DEN",
+      "name": "Trân Châu Đen",
+      "price": 5000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_TRAN_CHAU_TRANG",
+      "name": "Trân Châu Trắng",
+      "price": 5000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_KEM_CHEESE",
+      "name": "Kem Cheese",
+      "price": 8000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_KEM_DEO",
+      "name": "Kem Dẻo",
+      "price": 10000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_KEM_MUOI",
+      "name": "Kem Muối",
+      "price": 6000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_KEM_CHEESE_OREO",
+      "name": "Kem Cheese Oreo",
+      "price": 10000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_HAT_NO_CU_NANG",
+      "name": "Hạt Nổ Củ Năng",
+      "price": 8000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_KEM_TRUNG",
+      "name": "Kem Trứng",
+      "price": 10000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_KHUC_BACH",
+      "name": "Khúc Bạch",
+      "price": 10000,
+      "scope": "general"
+    },
+    {
+      "id": "TOP_KEM_DEO_BUON_ME",
+      "name": "Kem Dẻo Buôn Mê",
+      "price": 8000,
+      "scope": "suggested"
+    },
+    {
+      "id": "TOP_KEM_CHANH",
+      "name": "Kem Chanh",
+      "price": 5000,
+      "scope": "suggested"
+    },
+    {
+      "id": "TOP_SUONG_SAO",
+      "name": "Sương Sáo",
+      "price": 5000,
+      "scope": "suggested"
+    },
+    {
+      "id": "TOP_SUA_THAI_LAN",
+      "name": "Sữa Thái Lan",
+      "price": 8000,
+      "scope": "suggested"
+    },
+    {
+      "id": "TOP_SUA_HAT",
+      "name": "Sữa Hạt",
+      "price": 5000,
+      "scope": "suggested"
+    },
+    {
+      "id": "TOP_KEM_MATCHA",
+      "name": "Kem Matcha",
+      "price": 10000,
+      "scope": "suggested"
+    },
+    {
+      "id": "TOP_KEM_DAU",
+      "name": "Kem Dâu",
+      "price": 5000,
+      "scope": "suggested"
+    },
+    {
+      "id": "TOP_MATCHA",
+      "name": "Matcha",
+      "price": 5000,
+      "scope": "suggested"
+    },
+    {
+      "id": "TOP_SUA_DUA",
+      "name": "Sữa Dừa",
+      "price": 8000,
+      "scope": "suggested"
+    },
+    {
+      "id": "TOP_PHO_MAI",
+      "name": "Phô Mai",
+      "price": 10000,
+      "scope": "suggested"
+    }
+  ],
+  "suggestions": [
+    {
+      "product_name": "Cafe Sữa",
+      "topping_id": "TOP_KEM_MUOI",
+      "price": 5000
+    },
+    {
+      "product_name": "Cafe Sữa",
+      "topping_id": "TOP_KEM_CHEESE",
+      "price": 5000
+    },
+    {
+      "product_name": "Cafe Sữa",
+      "topping_id": "TOP_KEM_DEO_BUON_ME",
+      "price": 8000
+    },
+    {
+      "product_name": "Cafe Sữa",
+      "topping_id": "TOP_KEM_TRUNG",
+      "price": 8000
+    },
+    {
+      "product_name": "Cafe Sữa",
+      "topping_id": "TOP_KEM_CHANH",
+      "price": 5000
+    },
+    {
+      "product_name": "Cafe Sữa Dừa",
+      "topping_id": "TOP_SUONG_SAO",
+      "price": 5000
+    },
+    {
+      "product_name": "Cafe Caramel",
+      "topping_id": "TOP_KEM_MUOI",
+      "price": 5000
+    },
+    {
+      "product_name": "Cafe Sữa Tươi",
+      "topping_id": "TOP_SUA_THAI_LAN",
+      "price": 8000
+    },
+    {
+      "product_name": "Cafe Sữa Tươi",
+      "topping_id": "TOP_SUA_HAT",
+      "price": 5000
+    },
+    {
+      "product_name": "Bạc Xỉu",
+      "topping_id": "TOP_KEM_MUOI",
+      "price": 5000
+    },
+    {
+      "product_name": "Matcha Latte",
+      "topping_id": "TOP_KEM_MUOI",
+      "price": 5000
+    },
+    {
+      "product_name": "Matcha Latte",
+      "topping_id": "TOP_KEM_MATCHA",
+      "price": 10000
+    },
+    {
+      "product_name": "Matcha Latte",
+      "topping_id": "TOP_KEM_DAU",
+      "price": 5000
+    },
+    {
+      "product_name": "Matcha Latte",
+      "topping_id": "TOP_KEM_CHEESE",
+      "price": 5000
+    },
+    {
+      "product_name": "Matcha Latte",
+      "topping_id": "TOP_KEM_TRUNG",
+      "price": 8000
+    },
+    {
+      "product_name": "Matcha Latte",
+      "topping_id": "TOP_SUA_HAT",
+      "price": 5000
+    },
+    {
+      "product_name": "Matcha Latte",
+      "topping_id": "TOP_MATCHA",
+      "price": 5000
+    },
+    {
+      "product_name": "Matcha Oreo",
+      "topping_id": "TOP_KEM_CHEESE",
+      "price": 5000
+    },
+    {
+      "product_name": "Matcha Oreo",
+      "topping_id": "TOP_PHO_MAI",
+      "price": 10000
+    },
+    {
+      "product_name": "Matcha Caramel",
+      "topping_id": "TOP_KEM_MUOI",
+      "price": 5000
+    },
+    {
+      "product_name": "Cacao Sữa Đá",
+      "topping_id": "TOP_KEM_MUOI",
+      "price": 5000
+    },
+    {
+      "product_name": "Cacao Sữa Đá",
+      "topping_id": "TOP_KEM_TRUNG",
+      "price": 8000
+    },
+    {
+      "product_name": "Cacao Sữa Đá",
+      "topping_id": "TOP_KEM_DEO_BUON_ME",
+      "price": 8000
+    },
+    {
+      "product_name": "Cacao Latte",
+      "topping_id": "TOP_SUA_THAI_LAN",
+      "price": 8000
+    },
+    {
+      "product_name": "Cacao Latte",
+      "topping_id": "TOP_SUA_HAT",
+      "price": 5000
+    },
+    {
+      "product_name": "Cacao Latte",
+      "topping_id": "TOP_SUA_DUA",
+      "price": 8000
+    },
+    {
+      "product_name": "Cacao Oreo",
+      "topping_id": "TOP_KEM_CHEESE",
+      "price": 5000
+    },
+    {
+      "product_name": "Cacao Oreo",
+      "topping_id": "TOP_PHO_MAI",
+      "price": 10000
+    },
+    {
+      "product_name": "Khoai Môn Latte",
+      "topping_id": "TOP_KEM_TRUNG",
+      "price": 8000
+    },
+    {
+      "product_name": "Khoai Môn Latte",
+      "topping_id": "TOP_KEM_MUOI",
+      "price": 5000
+    }
+  ]
+}

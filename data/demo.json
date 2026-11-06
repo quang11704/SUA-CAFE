@@ -1,0 +1,59 @@
+{
+  "menu": [
+    {
+      "id": "CF01_M",
+      "category": "Cà Phê",
+      "name": "Cà phê đen · mẫu",
+      "size": "M",
+      "price": 22000,
+      "cost": 4000
+    },
+    {
+      "id": "DEMO_MILK",
+      "category": "Cà Phê",
+      "name": "Cà phê sữa · mẫu",
+      "size": "M",
+      "price": 27000,
+      "cost": 6500
+    },
+    {
+      "id": "DEMO_TEA",
+      "category": "Trà",
+      "name": "Trà trái cây · mẫu",
+      "size": "M",
+      "price": 33000,
+      "cost": 8000
+    }
+  ],
+  "stock": [
+    {
+      "id": 1,
+      "name": "Cà phê mẫu",
+      "unit": "g",
+      "price": 150,
+      "qty": 2000,
+      "minimum": 500,
+      "note": "Dữ liệu giả lập, kiểm kê trước khi dùng thật"
+    },
+    {
+      "id": 2,
+      "name": "Sữa mẫu",
+      "unit": "ml",
+      "price": 30,
+      "qty": 3000,
+      "minimum": 500,
+      "note": "Dữ liệu giả lập"
+    }
+  ],
+  "recipes": [
+    {
+      "product": "CF01_M",
+      "name": "Cà phê mẫu",
+      "qty": 18,
+      "unit": "g",
+      "source": "Công thức giả lập để thử giao diện"
+    }
+  ],
+  "batches": [],
+  "history": []
+}

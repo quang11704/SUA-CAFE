@@ -1,0 +1,19 @@
+{
+  "name": "SỨA cà phê · Python 3.12",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+  "forwardPorts": [
+    8000
+  ],
+  "portsAttributes": {
+    "8000": {
+      "label": "SỨA cà phê",
+      "onAutoForward": "openBrowser",
+      "protocol": "http"
+    }
+  },
+  "postCreateCommand": "bash install.sh",
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "remoteUser": "vscode",
+  "postAttachCommand": "bash .devcontainer/start.sh",
+  "waitFor": "postStartCommand"
+}
