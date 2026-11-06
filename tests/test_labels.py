@@ -13,6 +13,7 @@ class LabelTest(unittest.TestCase):
   oid=self.order()
   status,raw=self.owner.call('labels/'+str(oid));self.assertEqual(status,200)
   text=raw.decode();self.assertEqual(text.count('<section class="label"'),3)
+  self.assertNotIn('#'+str(oid),text)
   self.assertIn('size:50.0mm 30.0mm',text)
   for i in range(1,4):self.assertIn(str(i)+'/3',text)
   self.assertIn('Ít đá',text);self.assertIn('22.000 đ/ly',text)

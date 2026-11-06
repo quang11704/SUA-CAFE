@@ -30,7 +30,7 @@ class BrandingTest(unittest.TestCase):
   self.save();old_logo=self.owner.state()['settings']['logo_url'];oid=self.sale();self.save('blue')
   current=self.owner.state();self.assertNotEqual(old_logo,current['settings']['logo_url'])
   status,page=self.owner.call(f'print/{oid}?dataset={current["dataset_id"]}&auto=1');self.assertEqual(status,200)
-  self.assertIn(old_logo.encode(),page);self.assertNotIn(current['settings']['logo_url'].encode(),page);self.assertIn(b'data-auto-print="1"',page)
+  self.assertIn(old_logo.encode(),page);self.assertNotIn(current['settings']['logo_url'].encode(),page);self.assertIn(b'data-auto-print="1"',page);self.assertNotIn(('#'+str(oid)).encode(),page)
   self.assertEqual(self.owner.call('invoice/'+str(oid))[0],200)
   self.owner.call('branding',dict(remove_logo=True,font='classic'))
   self.assertFalse(self.owner.state()['settings']['logo_url']);self.assertEqual(self.owner.call(old_logo.removeprefix('/api/'))[0],200)

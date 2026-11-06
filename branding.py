@@ -83,7 +83,7 @@ def invoice(app, order):
     width, height = 226.77, 700  # 80 mm wide, long bills paginate.
     buf = io.BytesIO()
     pdf = canvas.Canvas(buf, pagesize=(width, height))
-    pdf.setTitle(f"{shop['name']} - Phiếu #{order['id']}")
+    pdf.setTitle(f"{shop['name']} - Phiếu thanh toán")
     y = height - 25
     logo = None
     if shop.get('logo_id'):
@@ -130,7 +130,7 @@ def invoice(app, order):
         if shop.get(key):
             line(shop[key], center=True)
     line('PHIẾU THANH TOÁN', 10, center=True)
-    line(f"Mã #{order['id']} · {order['created'][:16].replace('T', ' ')}", center=True)
+    line(order['created'][:16].replace('T', ' '), center=True)
     line(f"Thanh toán: {order['payment']}")
     line()
     for item in json.loads(order['items']):
@@ -166,4 +166,4 @@ def receipt_html(app, order, auto=False):
     discount = f'<p class="amount"><span>Giảm giá</span><span>{fmt(order["discount"])}</span></p>' if order.get('discount') else ''
     contact_lines = '<br>'.join(esc(shop[key]) for key in ['address', 'phone'] if shop.get(key))
     contact = '<p class="center">'+contact_lines+'</p>' if contact_lines else ''
-    return (f'''<!doctype html><html lang="vi" data-brand-font="{esc(shop.get('brand_font','script'))}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bill SỨA #{order['id']}</title><link rel="stylesheet" href="/receipt.css"><body data-auto-print="{'1' if auto else '0'}"><div class="tools"><button id="print-receipt">In bill</button><button id="close-receipt">Đóng</button></div><main>{logo}<h1>{esc(shop['name'])}</h1>{contact}<h2>PHIẾU THANH TOÁN</h2><p class="center">#{order['id']} · {esc(order['created'][:16].replace('T', ' '))}</p><p>Thanh toán: {esc(order['payment'])}</p>{''.join(rows)}{discount}<p class="amount total"><strong>Tổng cộng</strong><strong>{fmt(order['total'])}</strong></p>{note}<p class="center">{esc(shop.get('footer','Cảm ơn bạn đã chọn chúng tôi!'))}</p><p class="center legal">Phiếu thanh toán, không phải hóa đơn thuế.</p></main><script src="/receipt.js"></script></body></html>''').encode('utf-8')
+    return (f'''<!doctype html><html lang="vi" data-brand-font="{esc(shop.get('brand_font','script'))}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bill SỨA</title><link rel="stylesheet" href="/receipt.css"><body data-auto-print="{'1' if auto else '0'}"><div class="tools"><button id="print-receipt">In bill</button><button id="close-receipt">Đóng</button></div><main>{logo}<h1>{esc(shop['name'])}</h1>{contact}<h2>PHIẾU THANH TOÁN</h2><p class="center">{esc(order['created'][:16].replace('T', ' '))}</p><p>Thanh toán: {esc(order['payment'])}</p>{''.join(rows)}{discount}<p class="amount total"><strong>Tổng cộng</strong><strong>{fmt(order['total'])}</strong></p>{note}<p class="center">{esc(shop.get('footer','Cảm ơn bạn đã chọn chúng tôi!'))}</p><p class="center legal">Phiếu thanh toán, không phải hóa đơn thuế.</p></main><script src="/receipt.js"></script></body></html>''').encode('utf-8')

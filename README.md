@@ -14,7 +14,7 @@ Bill HTML và PDF dùng **Be Vietnam Pro** thường/semibold để dễ đọc 
 
 Trong **Bán hàng**, nhập ghi chú riêng từng lựa chọn ly (ít đá, mức đường…) nếu cần. Chọn **Tem dán ly → In tem từng ly** trước thanh toán. In bill và in tem là hai lựa chọn độc lập, mặc định đều không in. Với cùng món/topping nhưng ghi chú khác nhau, app giữ thành dòng riêng.
 
-Mỗi ly tạo một tem **50×30 mm**, gồm tên quán, món/size, topping, ghi chú ly/đơn, mã đơn, số thứ tự ly/tổng ly, giờ bán và giá mỗi ly gồm topping (trước giảm giá toàn đơn). Trang in có thể chọn phạm vi để in bù, tối đa 200 tem/lượt. Trong **Đơn hàng → In tem**, có thể xem trước và in lại; không ghi thêm đơn/doanh thu.
+Mỗi ly tạo một tem **50×30 mm**, gồm tên quán, món/size, topping, ghi chú ly/đơn, số thứ tự ly/tổng ly, giờ bán và giá mỗi ly gồm topping (trước giảm giá toàn đơn). Trang in có thể chọn phạm vi để in bù, tối đa 200 tem/lượt. Trong **Đơn hàng → In tem**, có thể xem trước và in lại; không ghi thêm đơn/doanh thu.
 
 **Máy CLabel:** cài driver chính thức phù hợp model và kết nối máy với Windows để máy xuất hiện trong danh sách máy in của Chrome/Edge. Chọn máy CLabel, giấy **50×30 mm**, tỷ lệ **100%**, lề **0/None** trong hộp thoại trình duyệt và tắt Headers/Footers. App đã chừa lề trong tem mặc định 1 mm. Nếu máy không xuất hiện hoặc chỉ dùng ứng dụng Bluetooth riêng của CLabel, cần xác định model để chọn cách kết nối; bản này chưa gửi lệnh trực tiếp USB/Bluetooth/TSPL.
 
@@ -165,3 +165,5 @@ Browser test tự chạy server riêng bằng SQLite tạm và Chromium (`CHROMI
 ## Trước khi đưa lên Internet
 
 Mặc dù đã có đăng nhập, đây vẫn là server phát triển. Cần app server production, HTTPS/reverse proxy đúng cấu hình, `SUA_SECURE_COOKIE=1` khi phục vụ qua HTTPS, quản lý secret/config, backup tự động ngoài máy chủ, đo tải và kiểm thử khôi phục trên hạ tầng đích. API state hiện trả toàn bộ dữ liệu của vai trò, chưa phân trang đầy đủ. Xem [PLAN.md](PLAN.md) cho yêu cầu còn lại; chưa được xem là đã hoàn tất mọi P0 hoặc đã triển khai production.
+
+Mã đơn nội bộ chỉ hiện ở màn hình quản lý; tem và bill/PDF không in mã dạng #6, #7.
