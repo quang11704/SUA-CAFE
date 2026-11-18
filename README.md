@@ -1,6 +1,6 @@
 # SỨA cà phê
 
-Web app tiếng Việt tông hồng: bán hàng kèm topping, bill/PDF tùy chọn, kho thủ công, sổ bánh, báo cáo và quản lý nhân viên. Dữ liệu lưu SQLite; frontend HTML/CSS/JavaScript, backend Python và ReportLab.
+Web app tiếng Việt tông hồng: bán hàng kèm topping, bill/PDF tùy chọn, kho thủ công, báo cáo và quản lý nhân viên. Dữ liệu lưu SQLite; frontend HTML/CSS/JavaScript, backend Python và ReportLab.
 
 **Branch công khai chỉ chứa dữ liệu mẫu giả lập** (3 món, 2 nguyên liệu), không chứa giá vốn/tồn kho/doanh thu thật từ Excel. App hiển thị nhãn BẢN DÙNG THỬ khi chạy dữ liệu mẫu. Xem [IMPORT_EXCEL.md](IMPORT_EXCEL.md) để nhập dữ liệu của quán trong workspace riêng.
 
@@ -103,12 +103,12 @@ Sau đó vào **Cài đặt & nhân viên** để sửa thông tin quán, tạo 
 ## Những phần đã chạy
 
 - Menu: hỗ trợ món/size từ Excel; chủ quán thêm món, chỉnh giá bán/giá vốn ước tính, ngừng bán. Đơn cũ giữ snapshot giá/cost và thông tin quán trên PDF.
-- POS: tìm/lọc nhóm, giỏ hàng, ghi chú, giảm giá theo số tiền (chỉ chủ quán), tiền mặt/chuyển khoản.
+- POS: tìm/lọc nhóm, giỏ hàng, ghi chú, giảm giá theo số tiền (chỉ chủ quán), tiền mặt/chuyển khoản. Menu và khung thanh toán cuộn riêng.
 - Chống đơn trùng: `request_key` theo người dùng, cùng mã/nội dung trả cùng đơn; khác nội dung trả 409. Browser giữ lần thanh toán chưa xác nhận và cho thử lại kể cả sau reload. Lần thử được lưu riêng theo ID tài khoản trên thiết bị.
 - Đơn hàng: tìm mã/tên món, lọc ngày/trạng thái, xem chi tiết, tải PDF. Thu ngân chỉ xem đơn của mình.
-- Hoàn tiền: chủ quán hoàn toàn bộ đơn một lần, có lý do; giữ đơn gốc, tạo chứng từ tại thời điểm hoàn. Không tự hoàn nguyên liệu/giá vốn đã tiêu hao; PDF giữ nội dung giao dịch gốc, chứng từ hoàn hiển thị ở chi tiết đơn.
+- Lịch sử hoàn tiền: trạng thái và chứng từ các khoản hoàn cũ vẫn hiển thị trong chi tiết đơn. Chức năng tạo hoàn tiền đã được gỡ.
 - Kho: điều chỉnh nhập/xuất có lý do, chặn âm trong transaction, xem lịch sử, cảnh báo ngưỡng. Thu ngân không có quyền kho. Nhân viên kho không được nhận giá nhập/cost/lợi nhuận từ API.
-- Bánh: ghi nhập/bán/hủy theo đợt/ngày, chặn bán + hủy vượt nhập. Bản ghi nhập nhầm có thể hủy kèm lý do, không bị xóa khỏi lịch sử.
+- Lịch sử sổ bánh: chủ quán có thể xem bản ghi cũ trong Báo cáo. Lịch sử ở chế độ chỉ đọc và vẫn được tính vào kỳ tương ứng.
 - Chi phí: nhóm thuê mặt bằng/lương/điện nước/khác, hủy bản ghi nhập nhầm có lý do.
 - Báo cáo ngày/tháng: API tính doanh thu thuần, hoàn tiền, giá vốn, hủy bánh, chi phí, lợi nhuận ước tính. Xuất CSV UTF-8 có BOM, mở bằng Excel.
 - Dữ liệu quán: chủ quán tải hai file XLSX (tối đa 8 MB/file), xem trước có hạn 30 phút, đối soát tồn/ngày kiểm kê và áp dụng riêng khỏi demo. Giữ bản demo nhất quán để tải, tài khoản/cấu hình/phiên được duy trì.
@@ -123,7 +123,6 @@ Sau đó vào **Cài đặt & nhân viên** để sửa thông tin quán, tạo 
 - File quản lý quán: nhập dòng tồn có tên/đơn vị/giá/số tồn hợp lệ. Tồn theo đơn vị đóng gói gốc. Chưa ghép toàn bộ danh mục nguyên liệu của COST vào tồn vì khác tên/quy cách.
 - Doanh thu lịch sử có ngày Excel hợp lệ được xem riêng; các khối ngày dạng chuỗi thiếu năm và chi phí lịch sử chưa nhập tự động. Không tính lợi nhuận lịch sử khi thiếu vốn/chi phí đã đối soát. Một ô ngày lỗi P161 không được sử dụng.
 - **Chưa tự trừ nguyên liệu:** cần chủ quán xác nhận ghép mã, g/ml/hộp, sản lượng mẻ, bao bì và hao hụt. Hiện kho nhập/xuất độc lập, chưa có phiếu nhập kèm đơn giá, lô/hạn dùng hay sản xuất BTP.
-- **Bánh là nguồn doanh thu riêng:** không ghi lại cùng lượt bán trên POS. Chưa có danh mục bánh/lô/hạn dùng/chuyển dư sang ngày sau.
 - Lợi nhuận ước tính = doanh thu thuần − cost đơn đã bán − cost bánh đã bán − cost bánh hủy − chi phí vận hành chưa hủy. Hoàn tiền trừ doanh thu ở ngày hoàn; không hoàn vốn đã tiêu hao. Không ghi mua nguyên liệu thành chi phí vận hành nếu đã tính trong giá vốn.
 - Đơn mới lưu giá/cost đơn vị làm tròn half-up tới VNĐ, không thay cost đơn cũ khi migration. Chưa là sổ kế toán chuẩn hoặc công cụ quyết toán thuế.
 - Phiếu PDF không phải hóa đơn điện tử thuế. Chuyển khoản do nhân viên xác nhận thủ công, chưa kết nối ngân hàng.
@@ -156,11 +155,11 @@ node tests/browser_labels.cjs
 node tests/browser_orders.cjs
 ```
 
-55 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, tự khởi động/khôi phục tiến trình/không tạo trùng/không dừng chương trình khác, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, hoàn ngày khác, báo cáo/CSV, hủy sổ/chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
+55 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, tự khởi động/khôi phục tiến trình/không tạo trùng/không dừng chương trình khác, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, lịch sử hoàn khác ngày và sổ bánh, báo cáo/CSV, hủy chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
 
 Luồng nhập đã kiểm tra end-to-end bằng XLSX giả lập và parser đã đọc được hai workbook thật trong workspace riêng; không commit dữ liệu nguồn. Cấu hình Codespaces chưa được tạo/thử trên một Codespace GitHub thật trong phiên này; đã kiểm thử đường dẫn cài/start và mô phỏng Origin của cổng chuyển tiếp. Launcher Windows chưa chạy thử trên Windows.
 
-Browser test tự chạy server riêng bằng SQLite tạm và Chromium (`CHROMIUM_PATH` để đổi binary). Kiểm tra khởi tạo, các màn hình chính, thêm món, mất phản hồi sau khi đơn đã lưu rồi retry qua reload, PDF, kho/bánh, CSV, hoàn tiền, cấu hình/nhân viên, tải backup, mobile 390px và tài khoản thu ngân. Script browser_import kiểm tra import thật qua API, retry khi mất phản hồi, stale tab, backup demo và restart. Không tạo giao dịch thử trong DB thật. Ảnh kiểm thử lưu ở `/tmp/sua-v2-desktop.png` và `/tmp/sua-v2-mobile.png`.
+Browser test tự chạy server riêng bằng SQLite tạm và Chromium (`CHROMIUM_PATH` để đổi binary). Kiểm tra khởi tạo, các màn hình chính, thêm món, mất phản hồi sau khi đơn đã lưu rồi retry qua reload, PDF, kho, CSV, lịch sử bánh và hoàn tiền, cấu hình/nhân viên, tải backup, mobile 390px và tài khoản thu ngân. Script browser_import kiểm tra import thật qua API, retry khi mất phản hồi, stale tab, backup demo và restart. Không tạo giao dịch thử trong DB thật. Ảnh kiểm thử lưu ở `/tmp/sua-v2-desktop.png` và `/tmp/sua-v2-mobile.png`.
 
 ## Trước khi đưa lên Internet
 

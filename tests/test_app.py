@@ -122,7 +122,7 @@ class AppTest(unittest.TestCase):
             self.assertTrue(all('cost' not in item for item in json.loads(o['items'])))
         for path in ['report','backup','export','invoice/'+str(owner_id)]:
             self.assertEqual(self.cashier.call(path)[0],403,path)
-        for path in ['products','users','settings','refunds','expenses','cakes','stock']:
+        for path in ['products','users','settings','expenses','stock']:
             self.assertEqual(self.cashier.call(path,{})[0],403,path)
         inv=self.inventory.state()
         self.assertTrue(inv['stock']);self.assertTrue(inv['recipes']);self.assertFalse(inv['orders'])
@@ -169,39 +169,57 @@ class AppTest(unittest.TestCase):
         self.assertEqual(self.owner.state()['stock'][0]['qty'],2)
         self.assertTrue(any(a['action']=='stock.adjust' for a in self.owner.state()['audit']))
 
-    def test_refund_report_and_export(self):
+    def record_legacy_refund(self, order_id, reason):
+        with server.connect() as c:
+            order = c.execute('SELECT total,user_id FROM orders WHERE id=?', (order_id,)).fetchone()
+            c.execute('INSERT INTO refunds(order_id,created,amount,reason,user_id) VALUES(?,?,?,?,?)',
+                      (order_id, server.now(), order['total'], reason, order['user_id']))
+            c.execute("UPDATE orders SET status='refunded' WHERE id=?", (order_id,))
+
+    def test_refund_history_report_and_export(self):
         oid,_=self.sale()
         period=server.now()[:10]
         before=self.owner.call('report?period='+period)[1]
-        status,_=self.owner.call('refunds',dict(order_id=oid,reason='Khách đổi ý'));self.assertEqual(status,201)
+        self.assertEqual(self.owner.call('refunds',dict(order_id=oid,reason='Yêu cầu cũ'))[0],404)
+        self.assertEqual(next(o for o in self.owner.state()['orders'] if o['id']==oid)['status'],'paid')
+        self.record_legacy_refund(oid, 'Khách đổi ý')
+        state=self.owner.state()
+        order=next(o for o in state['orders'] if o['id']==oid)
+        refund=next(r for r in state['refunds'] if r['order_id']==oid)
         after=self.owner.call('report?period='+period)[1]
-        order=next(o for o in self.owner.state()['orders'] if o['id']==oid)
         self.assertEqual(after['revenue'],before['revenue']-order['total'])
         self.assertEqual(after['cost'],before['cost'])
         self.assertEqual(order['status'],'refunded')
-        self.owner.call('refunds',dict(order_id=oid,reason='Gửi lại'))
-        self.assertEqual(self.owner.call('report?period='+period)[1]['revenue'],after['revenue'])
+        self.assertEqual(refund['reason'],'Khách đổi ý')
         status,raw=self.owner.call('export?period='+period)
         self.assertEqual(status,200);self.assertIn('Doanh thu thuần',raw.decode('utf-8-sig'))
         self.assertEqual(self.owner.call('report?period=2026-99')[0],400)
 
-    def test_cakes_expenses_void(self):
+    def test_cake_history_and_expense_void(self):
         date=server.now()[:10]
         before=self.owner.call('report?period='+date)[1]
+        with server.connect() as c:
+            cake_id = c.execute(
+                'INSERT INTO cakes(date,name,received,sold,waste,price,cost) VALUES(?,?,?,?,?,?,?)',
+                (date,'Bánh flan',10,6,1,15000,6000)).lastrowid
         cake=dict(date=date,name='Bánh flan',received=10,sold=6,waste=1,price=15000,cost=6000)
-        self.assertEqual(self.owner.call('cakes',cake)[0],201)
-        self.assertEqual(self.owner.call('cakes',dict(cake,sold=11))[0],400)
+        self.assertEqual(self.owner.call('cakes',cake)[0],404)
+        self.assertEqual(self.owner.call('void',dict(type='cakes',id=cake_id,reason='Yêu cầu cũ'))[0],400)
+        state=self.owner.state()
+        saved=next(c for c in state['cakes'] if c['id']==cake_id)
+        self.assertEqual(saved['sold'],6)
+        self.assertFalse(saved['voided'])
         self.assertEqual(self.owner.call('expenses',dict(date=date,name='Điện',amount=50000,category='Điện nước'))[0],201)
         after=self.owner.call('report?period='+date)[1]
         self.assertEqual(after['revenue']-before['revenue'],90000)
         self.assertEqual(after['cost']-before['cost'],36000)
         self.assertEqual(after['waste']-before['waste'],6000)
         self.assertEqual(after['profit']-before['profit'],-2000)
-        state=self.owner.state()
-        for table in ['cakes','expenses']:
-            self.assertEqual(self.owner.call('void',dict(type=table,id=state[table][0]['id'],reason='Nhập nhầm'))[0],201)
+        expense_id=self.owner.state()['expenses'][0]['id']
+        self.assertEqual(self.owner.call('void',dict(type='expenses',id=expense_id,reason='Nhập nhầm'))[0],201)
         final=self.owner.call('report?period='+date)[1]
-        for key in ['revenue','cost','waste','expenses','profit']:self.assertEqual(final[key],before[key])
+        self.assertEqual(final['expenses'],before['expenses'])
+        self.assertEqual(final['profit']-before['profit'],48000)
 
     def test_backup_is_restorable_and_init_preserves_work(self):
         oid,_=self.sale()
@@ -277,7 +295,7 @@ class AppTest(unittest.TestCase):
         with server.connect() as c:
             c.execute("UPDATE orders SET created='2026-01-01T10:00:00+07:00' WHERE id=?",(oid,))
         before=self.owner.call('report?period=2026-01-01')[1]
-        self.assertEqual(self.owner.call('refunds',dict(order_id=oid,reason='Hoàn ngày khác'))[0],201)
+        self.record_legacy_refund(oid, 'Hoàn ngày khác')
         after=self.owner.call('report?period=2026-01-01')[1]
         self.assertEqual(before,after)
         status,pdf=self.owner.call('invoice/'+str(oid));self.assertEqual(status,200)
