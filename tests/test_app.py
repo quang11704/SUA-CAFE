@@ -122,7 +122,7 @@ class AppTest(unittest.TestCase):
             self.assertTrue(all('cost' not in item for item in json.loads(o['items'])))
         for path in ['report','backup','export','invoice/'+str(owner_id)]:
             self.assertEqual(self.cashier.call(path)[0],403,path)
-        for path in ['products','users','settings','refunds','expenses','cakes','stock']:
+        for path in ['products','users','settings','expenses','stock']:
             self.assertEqual(self.cashier.call(path,{})[0],403,path)
         inv=self.inventory.state()
         self.assertTrue(inv['stock']);self.assertTrue(inv['recipes']);self.assertFalse(inv['orders'])
@@ -169,39 +169,30 @@ class AppTest(unittest.TestCase):
         self.assertEqual(self.owner.state()['stock'][0]['qty'],2)
         self.assertTrue(any(a['action']=='stock.adjust' for a in self.owner.state()['audit']))
 
-    def test_refund_report_and_export(self):
-        oid,_=self.sale()
-        period=server.now()[:10]
-        before=self.owner.call('report?period='+period)[1]
-        status,_=self.owner.call('refunds',dict(order_id=oid,reason='Khách đổi ý'));self.assertEqual(status,201)
-        after=self.owner.call('report?period='+period)[1]
-        order=next(o for o in self.owner.state()['orders'] if o['id']==oid)
-        self.assertEqual(after['revenue'],before['revenue']-order['total'])
-        self.assertEqual(after['cost'],before['cost'])
-        self.assertEqual(order['status'],'refunded')
-        self.owner.call('refunds',dict(order_id=oid,reason='Gửi lại'))
-        self.assertEqual(self.owner.call('report?period='+period)[1]['revenue'],after['revenue'])
-        status,raw=self.owner.call('export?period='+period)
-        self.assertEqual(status,200);self.assertIn('Doanh thu thuần',raw.decode('utf-8-sig'))
-        self.assertEqual(self.owner.call('report?period=2026-99')[0],400)
+    def test_removed_actions_and_report_export(self):
+        oid, _ = self.sale()
+        period = server.now()[:10]
+        before = self.owner.call('report?period=' + period)[1]
+        self.assertEqual(self.owner.call('refunds', dict(order_id=oid, reason='Nhập nhầm'))[0], 404)
+        self.assertEqual(self.owner.call('cakes', dict(date=period, name='Flan', received=1,
+                                                      sold=1, waste=0, price=15000, cost=5000))[0], 404)
+        self.assertEqual(self.owner.call('void', dict(type='cakes', id=1, reason='Nhập nhầm'))[0], 400)
+        self.assertEqual(self.owner.call('report?period=' + period)[1], before)
+        status, raw = self.owner.call('export?period=' + period)
+        self.assertEqual(status, 200)
+        self.assertEqual(raw.decode('utf-8-sig').splitlines()[0],
+                         'Kỳ,Doanh thu thuần,Tổng giá vốn,Chi phí,Lợi nhuận ước tính,Số đơn')
+        self.assertEqual(self.owner.call('report?period=2026-99')[0], 400)
 
-    def test_cakes_expenses_void(self):
-        date=server.now()[:10]
-        before=self.owner.call('report?period='+date)[1]
-        cake=dict(date=date,name='Bánh flan',received=10,sold=6,waste=1,price=15000,cost=6000)
-        self.assertEqual(self.owner.call('cakes',cake)[0],201)
-        self.assertEqual(self.owner.call('cakes',dict(cake,sold=11))[0],400)
-        self.assertEqual(self.owner.call('expenses',dict(date=date,name='Điện',amount=50000,category='Điện nước'))[0],201)
-        after=self.owner.call('report?period='+date)[1]
-        self.assertEqual(after['revenue']-before['revenue'],90000)
-        self.assertEqual(after['cost']-before['cost'],36000)
-        self.assertEqual(after['waste']-before['waste'],6000)
-        self.assertEqual(after['profit']-before['profit'],-2000)
-        state=self.owner.state()
-        for table in ['cakes','expenses']:
-            self.assertEqual(self.owner.call('void',dict(type=table,id=state[table][0]['id'],reason='Nhập nhầm'))[0],201)
-        final=self.owner.call('report?period='+date)[1]
-        for key in ['revenue','cost','waste','expenses','profit']:self.assertEqual(final[key],before[key])
+    def test_expense_and_void(self):
+        date = server.now()[:10]
+        before = self.owner.call('report?period=' + date)[1]
+        self.assertEqual(self.owner.call('expenses', dict(date=date, name='Điện', amount=50000, category='Điện nước'))[0], 201)
+        after = self.owner.call('report?period=' + date)[1]
+        self.assertEqual(after['profit'], before['profit'] - 50000)
+        expense = self.owner.state()['expenses'][0]
+        self.assertEqual(self.owner.call('void', dict(type='expenses', id=expense['id'], reason='Nhập nhầm'))[0], 201)
+        self.assertEqual(self.owner.call('report?period=' + date)[1], before)
 
     def test_backup_is_restorable_and_init_preserves_work(self):
         oid,_=self.sale()
@@ -271,13 +262,19 @@ class AppTest(unittest.TestCase):
             c.execute('UPDATE sessions SET expires=0 WHERE csrf=?',(client.csrf,))
         self.assertEqual(client.call('state')[0],401)
 
-    def test_long_invoice_and_refund_on_later_day(self):
+    def test_long_invoice_and_legacy_transactions_on_later_day(self):
         # The order stays on its business day; the refund belongs to its own day.
         oid,_=self.sale(items=[dict(id='CF01_M',qty=1)]*70,note='Ghi chú tiếng Việt '*20)
         with server.connect() as c:
             c.execute("UPDATE orders SET created='2026-01-01T10:00:00+07:00' WHERE id=?",(oid,))
         before=self.owner.call('report?period=2026-01-01')[1]
-        self.assertEqual(self.owner.call('refunds',dict(order_id=oid,reason='Hoàn ngày khác'))[0],201)
+        with server.connect() as c:
+            c.execute("INSERT INTO refunds(order_id,created,amount,reason,user_id) SELECT id,'2026-01-02',total,'Cũ',user_id FROM orders WHERE id=?", (oid,))
+            c.execute("UPDATE orders SET status='refunded' WHERE id=?", (oid,))
+            c.execute("INSERT INTO cakes(date,sold,waste,price,cost) VALUES('2026-01-02',2,1,15000,5000)")
+        historical = self.owner.call('report?period=2026-01-02')[1]
+        self.assertEqual(historical['revenue'], 30000 - before['gross'])
+        self.assertEqual(historical['profit'], historical['revenue'] - 15000)
         after=self.owner.call('report?period=2026-01-01')[1]
         self.assertEqual(before,after)
         status,pdf=self.owner.call('invoice/'+str(oid));self.assertEqual(status,200)

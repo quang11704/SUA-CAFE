@@ -8,6 +8,8 @@
 
 Tài liệu mô tả yêu cầu sản phẩm, hiện trạng bản phát triển và kế hoạch hoàn thiện. Các chức năng đề xuất chưa được xem là đã triển khai hoặc đã được chủ quán xác nhận.
 
+Phạm vi hiện tại đã bỏ sổ bánh và thao tác hoàn tiền. Các mục liên quan bên dưới ghi lại kế hoạch ban đầu. Báo cáo vẫn tính các giao dịch đã ghi trước khi bỏ hai chức năng này.
+
 ## 1. Mục tiêu
 
 - Quản lý bán đồ uống và bánh tại một nơi.

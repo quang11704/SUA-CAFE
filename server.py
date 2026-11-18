@@ -430,8 +430,8 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send(result)
                 stream = io.StringIO()
                 writer = csv.writer(stream)
-                writer.writerow(['Kỳ', 'Doanh thu trước hoàn', 'Hoàn tiền', 'Doanh thu thuần', 'Giá vốn', 'Hủy bánh', 'Chi phí', 'Lợi nhuận ước tính', 'Số đơn'])
-                writer.writerow([result[k] for k in ['period', 'gross', 'refunds', 'revenue', 'cost', 'waste', 'expenses', 'profit', 'count']])
+                writer.writerow(['Kỳ', 'Doanh thu thuần', 'Tổng giá vốn', 'Chi phí', 'Lợi nhuận ước tính', 'Số đơn'])
+                writer.writerow([period, result['revenue'], result['cost'] + result['waste'], result['expenses'], result['profit'], result['count']])
                 return self.send(stream.getvalue().encode('utf-8-sig'), kind='text/csv; charset=utf-8', filename=f'SUA-report-{period}.csv')
             if path == '/api/backup':
                 require(user, 'owner')
@@ -508,7 +508,7 @@ class Handler(BaseHTTPRequestHandler):
             c.execute('BEGIN IMMEDIATE')
             user = self.current_user(c)
             self.csrf(user)
-            if path in {'/api/orders','/api/products','/api/stock','/api/refunds','/api/cakes','/api/expenses','/api/void','/api/catalog/apply','/api/toppings'}:
+            if path in {'/api/orders','/api/products','/api/stock','/api/expenses','/api/void','/api/catalog/apply','/api/toppings'}:
                 self.check_dataset(c)
             if path == '/api/label-settings':
                 require(user, 'owner')
@@ -571,18 +571,6 @@ class Handler(BaseHTTPRequestHandler):
                                 (now(), payment, subtotal-discount, sum(p['cost'] * p['qty'] for p in items), encode(items), user['id'], key, fingerprint, settings, note, discount, subtotal, int(all(p['cost_known'] for p in items))))
                 audit(c, user, 'order.create', cur.lastrowid, after={'total': subtotal-discount})
                 return {'id': cur.lastrowid}, None
-            if path == '/api/refunds':
-                require(user, 'owner')
-                order = c.execute('SELECT * FROM orders WHERE id=?', (quantity(d['order_id']),)).fetchone()
-                if not order:
-                    raise ApiError(404, 'Không tìm thấy đơn hàng')
-                reason = text(d.get('reason'), 'Lý do hoàn', 500)
-                if order['status'] == 'refunded':
-                    return {'order_id': order['id'], 'replayed': True}, None
-                c.execute('INSERT INTO refunds(order_id,created,amount,reason,user_id) VALUES(?,?,?,?,?)', (order['id'], now(), money(order['total']), reason, user['id']))
-                c.execute("UPDATE orders SET status='refunded' WHERE id=?", (order['id'],))
-                audit(c, user, 'order.refund', order['id'], before={'status': 'paid'}, after={'status': 'refunded', 'reason': reason, 'amount': money(order['total'])})
-                return {}, None
             if path == '/api/products':
                 require(user, 'owner')
                 pid = text(d.get('id'), 'Mã món', 50)
@@ -651,27 +639,17 @@ class Handler(BaseHTTPRequestHandler):
                 cur = c.execute('INSERT INTO expenses(date,name,amount,category,user_id) VALUES(?,?,?,?,?)', values)
                 audit(c, user, 'expense.create', cur.lastrowid, after={'date': values[0], 'amount': values[2]})
                 return {}, None
-            if path == '/api/cakes':
-                require(user, 'owner')
-                values = [quantity(d[k], True) for k in ['received', 'sold', 'waste']]
-                if values[1] + values[2] > values[0]:
-                    raise ApiError(400, 'Số bánh bán + hủy không được vượt số nhập')
-                cur = c.execute('INSERT INTO cakes(date,name,received,sold,waste,price,cost,user_id) VALUES(?,?,?,?,?,?,?,?)',
-                                (date_string(d['date']), text(d.get('name'), 'Tên bánh', 100), *values, money(d['price']), money(d['cost']), user['id']))
-                audit(c, user, 'cake.create', cur.lastrowid, after={'name': d['name'], 'received': values[0], 'sold': values[1], 'waste': values[2]})
-                return {}, None
             if path == '/api/void':
                 require(user, 'owner')
-                table = d.get('type')
-                if table not in {'expenses', 'cakes'}:
+                if d.get('type') != 'expenses':
                     raise ValueError('Loại không hợp lệ')
                 reason = text(d.get('reason'), 'Lý do hủy', 500)
-                previous = c.execute(f'SELECT * FROM {table} WHERE id=?', (quantity(d['id']),)).fetchone()
+                previous = c.execute('SELECT * FROM expenses WHERE id=?', (quantity(d['id']),)).fetchone()
                 if not previous:
                     raise ApiError(404, 'Không tìm thấy bản ghi')
                 if not previous['voided']:
-                    c.execute(f'UPDATE {table} SET voided=1 WHERE id=?', (previous['id'],))
-                    audit(c, user, table + '.void', previous['id'], dict(previous), {'reason': reason})
+                    c.execute('UPDATE expenses SET voided=1 WHERE id=?', (previous['id'],))
+                    audit(c, user, 'expenses.void', previous['id'], dict(previous), {'reason': reason})
                 return {}, None
             raise ApiError(404, 'Không tìm thấy')
 

@@ -29,7 +29,7 @@ def _is_demo(app, c):
 def status(app, c):
     demo = _is_demo(app, c)
     counts = {table: c.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0]
-              for table in ['products', 'stock', 'orders', 'expenses', 'cakes']}
+              for table in ['products', 'stock', 'orders', 'expenses']}
     counts['menu'] = counts.pop('products')
     backup = app.metadata(c, 'demo_backup_file')
     return dict(can_import=demo, demo=demo, expires_minutes=30, current_counts=counts,
