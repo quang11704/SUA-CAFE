@@ -2,13 +2,13 @@
 
 Web app tiếng Việt tông hồng: bán hàng kèm topping, bill/PDF tùy chọn, kho thủ công, báo cáo và quản lý nhân viên. Dữ liệu lưu SQLite; frontend HTML/CSS/JavaScript, backend Python và ReportLab.
 
-**Branch công khai chỉ chứa dữ liệu mẫu giả lập** (3 món, 2 nguyên liệu), không chứa giá vốn/tồn kho/doanh thu thật từ Excel. App hiển thị nhãn BẢN DÙNG THỬ khi chạy dữ liệu mẫu. Xem [IMPORT_EXCEL.md](IMPORT_EXCEL.md) để nhập dữ liệu của quán trong workspace riêng.
+**Bản công khai có menu và giá bán theo ảnh của quán**, dùng tồn kho giả lập, không chứa giá vốn/tồn kho/doanh thu thật từ Excel. App hiển thị nhãn BẢN DÙNG THỬ khi chạy dữ liệu mẫu. Xem [IMPORT_EXCEL.md](IMPORT_EXCEL.md) để nhập dữ liệu của quán trong workspace riêng.
 
 ## In tem dán ly CLabel 50×30 mm
 
 Trong **Bán hàng**, nhập ghi chú riêng từng lựa chọn ly (ít đá, mức đường…) nếu cần. Chọn **Tem dán ly → In tem từng ly** trước thanh toán. In bill và in tem là hai lựa chọn độc lập, mặc định đều không in. Với cùng món/topping nhưng ghi chú khác nhau, app giữ thành dòng riêng.
 
-Mỗi ly tạo một tem **50×30 mm**, gồm tên quán, món/size, topping, ghi chú ly/đơn, mã đơn, số thứ tự ly/tổng ly, giờ bán và giá mỗi ly gồm topping (trước giảm giá toàn đơn). Trang in có thể chọn phạm vi để in bù, tối đa 200 tem/lượt. Trong **Đơn hàng → In tem**, có thể xem trước và in lại; không ghi thêm đơn/doanh thu.
+Mỗi ly tạo một tem **50×30 mm**, gồm tên quán, món/size, topping, ghi chú ly/đơn, số thứ tự ly/tổng ly, giờ bán và giá mỗi ly gồm topping (trước giảm giá toàn đơn). Trang in có thể chọn phạm vi để in bù, tối đa 200 tem/lượt. Trong **Đơn hàng → In tem**, có thể xem trước và in lại; không ghi thêm đơn/doanh thu.
 
 **Máy CLabel:** cài driver chính thức phù hợp model và kết nối máy với Windows để máy xuất hiện trong danh sách máy in của Chrome/Edge. Chọn máy CLabel, giấy **50×30 mm**, tỷ lệ **100%**, lề **0/None** trong hộp thoại trình duyệt và tắt Headers/Footers. App đã chừa lề trong tem mặc định 1 mm. Nếu máy không xuất hiện hoặc chỉ dùng ứng dụng Bluetooth riêng của CLabel, cần xác định model để chọn cách kết nối; bản này chưa gửi lệnh trực tiếp USB/Bluetooth/TSPL.
 
@@ -34,13 +34,13 @@ Quản trị thủ công khi cần: `bash .devcontainer/start.sh` (chuẩn bị/
 
 Cập nhật Codespaces bằng `git pull --ff-only`, `bash install.sh`, `bash .devcontainer/restart.sh`, rồi tải lại trang app.
 
-- Chủ quán mở **Menu & công thức → Xem & áp dụng menu mới SỨA**: đối soát **75 món / 162 biến thể size, 20 topping** từ hai ảnh rồi xác nhận. Menu cũ ngừng bán, đơn cũ giữ nguyên; tồn kho không bị đặt lại. Xem [MENU_REVIEW.md](MENU_REVIEW.md) cho các chữ/giá cần đối chiếu.
+- Khi khởi động, ứng dụng tự áp dụng phiên bản menu mới một lần: **75 món, 162 lựa chọn món/size**. Món cũ ngoài danh mục chuyển sang **Ngưng bán**. Đơn đã bán giữ giá lúc thanh toán. Xem [bảng đối soát menu](MENU_REVIEW.md).
 - Trong **Bán hàng**, chọn món → số ly và số phần topping trên mỗi ly → **Thêm vào đơn**. Cùng món nhưng khác topping có dòng riêng. Ví dụ Cafe Sữa M 16.000 + Kem Muối theo gợi ý 5.000 = 21.000/ly; Kem Muối chung là 6.000 theo bảng cuối menu.
 - Chọn **Không in** (mặc định) hoặc **In bill** trước thanh toán. Không in chỉ lưu đơn; không tự tải PDF. In bill mở tab và hộp thoại in của trình duyệt; chọn máy in/khổ giấy phù hợp. Có thể in lại hoặc tải PDF trong Đơn hàng.
 - **Cài đặt & nhân viên → Logo SỨA Café & kiểu chữ**: chọn ảnh logo gốc PNG/JPG tối đa 2 MB, chọn kiểu chữ rồi lưu. Logo được giữ riêng trong SQLite, không đưa lên repo; dùng trên app và các bill mới. Bill cũ giữ logo theo snapshot. Font Great Vibes, Lobster và Be Vietnam Pro đi kèm giấy phép, hỗ trợ tiếng Việt; đây là bộ chữ theo phong cách ảnh, không khẳng định đúng tên font gốc.
 - Chỉ kế thừa giá vốn khi ghép khớp chắc chắn tên/size từ dữ liệu đang có. Món/topping thiếu cost được đánh dấu **Chưa có giá vốn**; báo cáo đơn liên quan hiện **Chưa đủ giá vốn**. Bổ sung cost trước khi bán; không tự tính lại cost của đơn đã chốt.
 
-Nếu đang chuyển từ demo sang dữ liệu thật, nhập Excel trước rồi áp dụng menu mới trên bộ dữ liệu thật. Menu ảnh chỉ chứa giá bán, không suy ra công thức hoặc lượng nguyên liệu/topping. Kho vẫn nhập/xuất thủ công.
+Nếu đang chuyển từ demo sang dữ liệu thật, ứng dụng cũng áp dụng menu hiện hành trên bộ dữ liệu mới khi nhập Excel. Menu ảnh chỉ chứa giá bán, không suy ra công thức hoặc lượng nguyên liệu/topping. Kho vẫn nhập/xuất thủ công.
 
 ## Đã chạy demo? Cập nhật và nhập dữ liệu thật
 
@@ -97,6 +97,7 @@ Sau đó vào **Cài đặt & nhân viên** để sửa thông tin quán, tạo 
 ## Những phần đã chạy
 
 - Menu: hỗ trợ món/size từ Excel; chủ quán thêm món, chỉnh giá bán/giá vốn ước tính, ngừng bán. Đơn cũ giữ snapshot giá/cost và thông tin quán trên PDF.
+- Trong **Menu & công thức**, món thiếu giá vốn được đánh dấu đỏ. Mở món, chọn **Nhập giá vốn** rồi lưu để bỏ đánh dấu. Tại **Công thức bán thành phẩm**, chủ quán có thể thêm hoặc sửa tên, công thức mẻ, lượng thành phẩm và đơn vị.
 - POS: tìm/lọc nhóm, giỏ hàng, ghi chú, giảm giá theo số tiền (chỉ chủ quán), tiền mặt/chuyển khoản.
 - Chống đơn trùng: `request_key` theo người dùng, cùng mã/nội dung trả cùng đơn; khác nội dung trả 409. Browser giữ lần thanh toán chưa xác nhận và cho thử lại kể cả sau reload. Lần thử được lưu riêng theo ID tài khoản trên thiết bị.
 - Đơn hàng: tìm mã/tên món, lọc theo ngày, xem chi tiết, tải PDF. Thu ngân chỉ xem đơn của mình.
@@ -118,7 +119,7 @@ Sau đó vào **Cài đặt & nhân viên** để sửa thông tin quán, tạo 
 - Lợi nhuận ước tính = doanh thu thuần − tổng giá vốn − chi phí vận hành chưa hủy. Báo cáo kỳ cũ vẫn tính các giao dịch bánh và hoàn tiền đã ghi nhận. Không ghi mua nguyên liệu thành chi phí vận hành nếu đã tính trong giá vốn.
 - Đơn mới lưu giá/cost đơn vị làm tròn half-up tới VNĐ, không thay cost đơn cũ khi migration. Chưa là sổ kế toán chuẩn hoặc công cụ quyết toán thuế.
 - Phiếu PDF không phải hóa đơn điện tử thuế. Chuyển khoản do nhân viên xác nhận thủ công, chưa kết nối ngân hàng.
-- Chưa có quản lý ca, chỉnh công thức, backup theo lịch hoặc đồng bộ offline. Nhập Excel qua UI chỉ dùng cho chuyển đầu kỳ từ demo; không ghi đè dữ liệu thật đã vận hành.
+- Chưa có quản lý ca, backup theo lịch hoặc đồng bộ offline. Nhập Excel qua UI chỉ dùng cho chuyển đầu kỳ từ demo; không ghi đè dữ liệu thật đã vận hành.
 
 ## Lưu trữ, nâng cấp và sao lưu
 
@@ -146,7 +147,7 @@ node tests/browser_toppings.cjs
 node tests/browser_labels.cjs
 ```
 
-55 integration tests dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, tự khởi động/khôi phục tiến trình/không tạo trùng/không dừng chương trình khác, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, báo cáo giao dịch cũ, báo cáo/CSV, hủy chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
+Các bài integration test dùng database tạm: auth/CSRF/rate limit, Origin qua cổng HTTPS của Codespaces, quyền và dữ liệu cost ẩn, thu hồi phiên, snapshot giá/PDF/logo, topping tính phía server, giá riêng theo món, menu có review, thiếu cost, quyền in bill, tự khởi động/khôi phục tiến trình/không tạo trùng/không dừng chương trình khác, idempotency với yêu cầu đồng thời, tồn cuối đồng thời, báo cáo giao dịch cũ, báo cáo/CSV, hủy chi phí, migration bảo toàn dữ liệu, backup phục hồi, PDF nhiều trang và chuyển dữ liệu Excel: upload/kiểm quyền/giới hạn, xem trước, ngày trùng, file không có dimension, áp dụng/replay, tab cũ, giữ tài khoản, backup demo và chọn lại database sau restart.
 
 Luồng nhập đã kiểm tra end-to-end bằng XLSX giả lập và parser đã đọc được hai workbook thật trong workspace riêng; không commit dữ liệu nguồn. Cấu hình Codespaces chưa được tạo/thử trên một Codespace GitHub thật trong phiên này; đã kiểm thử đường dẫn cài/start và mô phỏng Origin của cổng chuyển tiếp. Launcher Windows chưa chạy thử trên Windows.
 

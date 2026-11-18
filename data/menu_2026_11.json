@@ -1,5 +1,5 @@
 {
-  "version": "2026-11-menu",
+  "version": "2026-11-menu-r2",
   "products": [
     {
       "id": "S202611_TS01_M",
@@ -1256,6 +1256,12 @@
       "name": "Phô Mai",
       "price": 10000,
       "scope": "suggested"
+    },
+    {
+      "id": "TOP_SUA_THAI",
+      "name": "Sữa Thái",
+      "price": 8000,
+      "scope": "suggested"
     }
   ],
   "suggestions": [
@@ -1376,7 +1382,7 @@
     },
     {
       "product_name": "Cacao Latte",
-      "topping_id": "TOP_SUA_THAI_LAN",
+      "topping_id": "TOP_SUA_THAI",
       "price": 8000
     },
     {

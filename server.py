@@ -167,6 +167,8 @@ def init(db_path=None, seed=None, demo=None):
         CREATE TABLE IF NOT EXISTS login_attempts(id INTEGER PRIMARY KEY,peer TEXT NOT NULL,created INTEGER NOT NULL);
         CREATE INDEX IF NOT EXISTS attempts_peer ON login_attempts(peer,created);
         CREATE TABLE IF NOT EXISTS products(id TEXT PRIMARY KEY,category TEXT NOT NULL,name TEXT NOT NULL,size TEXT NOT NULL,price INTEGER NOT NULL,cost INTEGER NOT NULL,active INTEGER NOT NULL DEFAULT 1);
+        CREATE TABLE IF NOT EXISTS batch_recipes(id TEXT PRIMARY KEY, name TEXT, formula TEXT, yield_qty REAL, unit TEXT,
+                                                revision INTEGER NOT NULL DEFAULT 1);
         CREATE TABLE IF NOT EXISTS toppings(id TEXT PRIMARY KEY,name TEXT NOT NULL,price INTEGER NOT NULL,cost INTEGER NOT NULL DEFAULT 0,active INTEGER NOT NULL DEFAULT 1,cost_known INTEGER NOT NULL DEFAULT 0,scope TEXT NOT NULL DEFAULT 'general');
         CREATE TABLE IF NOT EXISTS product_toppings(product_id TEXT NOT NULL REFERENCES products(id),topping_id TEXT NOT NULL REFERENCES toppings(id),price_override INTEGER,PRIMARY KEY(product_id,topping_id));
         CREATE TABLE IF NOT EXISTS settings(id INTEGER PRIMARY KEY CHECK(id=1),data TEXT NOT NULL);
@@ -209,9 +211,14 @@ def init(db_path=None, seed=None, demo=None):
         c.executemany('INSERT OR IGNORE INTO stock VALUES(?,?)', [(s['id'], s['qty']) for s in selected_seed['stock']])
         c.executemany('INSERT OR IGNORE INTO products(id,category,name,size,price,cost) VALUES(?,?,?,?,?,?)',
                       [(p['id'], p['category'], p['name'], p['size'], money(p['price']), money(p['cost'])) for p in selected_seed['menu']])
+        c.executemany('INSERT OR IGNORE INTO batch_recipes(id,name,formula,yield_qty,unit) VALUES(?,?,?,?,?)',
+                      [(f'seed-{i}', b['name'], b['formula'], b['yield_qty'], b['unit'])
+                       for i, b in enumerate(selected_seed['batches'], 1)])
         c.execute('INSERT OR IGNORE INTO settings VALUES(1,?)', (encode(DEFAULT_SETTINGS),))
         c.execute('INSERT OR IGNORE INTO migrations VALUES(1,?)', (now(),))
         c.execute('PRAGMA user_version=1')
+        import catalog
+        catalog.ensure_current(sys.modules[__name__], c)
 
 
 def metadata(c, key, default=None):
@@ -234,6 +241,33 @@ def require(user, *roles):
         raise ApiError(403, 'Bạn không có quyền thực hiện thao tác này')
 
 
+def batch_fields(data):
+    return dict(name=text(data.get('name'), 'Tên bán thành phẩm', 200),
+                formula=text(data.get('formula'), 'Công thức mẻ', 3000),
+                yield_qty=positive(data.get('yield_qty')),
+                unit=text(data.get('unit'), 'Đơn vị bán thành phẩm', 60))
+
+
+def save_batch(c, user, data):
+    batch_id = text(data.get('id'), 'Mã công thức', 60)
+    revision = data.get('revision')
+    if type(revision) is not int or revision < 0:
+        raise ValueError('Phiên bản công thức không hợp lệ')
+    fields = batch_fields(data)
+    existing = c.execute('SELECT * FROM batch_recipes WHERE id=?', (batch_id,)).fetchone()
+    if existing and all(existing[k] == v for k, v in fields.items()):
+        return {'id': batch_id, 'revision': existing['revision']}
+    if (existing['revision'] if existing else 0) != revision:
+        raise ApiError(409, 'Công thức đã thay đổi. Tải lại trang để xem bản mới nhất.')
+    values = dict(fields, id=batch_id, revision=revision+1)
+    if existing:
+        c.execute('UPDATE batch_recipes SET name=:name,formula=:formula,yield_qty=:yield_qty,unit=:unit,revision=:revision WHERE id=:id', values)
+    else:
+        c.execute('INSERT INTO batch_recipes(id,name,formula,yield_qty,unit) VALUES(:id,:name,:formula,:yield_qty,:unit)', values)
+    audit(c, user, 'batch.save', batch_id, dict(existing) if existing else None, values)
+    return {'id': batch_id, 'revision': values['revision']}
+
+
 def build_state(c, user):
     owner = user['role'] == 'owner'
     stock_user = user['role'] in {'owner', 'inventory'}
@@ -249,7 +283,8 @@ def build_state(c, user):
         qty = {r['id']: r['qty'] for r in c.execute('SELECT * FROM stock')}
         state['stock'] = [dict(s, qty=qty[s['id']]) for s in seed['stock']]
         state['movements'] = [dict(r) for r in c.execute('SELECT * FROM movements ORDER BY id DESC')]
-        state['recipes'], state['batches'] = list(seed['recipes']), seed['batches']
+        state['recipes'] = list(seed['recipes'])
+        state['batches'] = [dict(r) for r in c.execute('SELECT * FROM batch_recipes ORDER BY rowid')]
         links = json.loads(metadata(c, 'catalog_recipe_links', '{}'))
         for new_id, old_id in links.items():
             state['recipes'].extend(dict(r, product=new_id) for r in seed['recipes'] if r['product'] == old_id)
@@ -508,7 +543,7 @@ class Handler(BaseHTTPRequestHandler):
             c.execute('BEGIN IMMEDIATE')
             user = self.current_user(c)
             self.csrf(user)
-            if path in {'/api/orders','/api/products','/api/stock','/api/expenses','/api/void','/api/catalog/apply','/api/toppings'}:
+            if path in {'/api/orders','/api/products','/api/stock','/api/expenses','/api/void','/api/catalog/apply','/api/toppings','/api/batches'}:
                 self.check_dataset(c)
             if path == '/api/label-settings':
                 require(user, 'owner')
@@ -571,6 +606,9 @@ class Handler(BaseHTTPRequestHandler):
                                 (now(), payment, subtotal-discount, sum(p['cost'] * p['qty'] for p in items), encode(items), user['id'], key, fingerprint, settings, note, discount, subtotal, int(all(p['cost_known'] for p in items))))
                 audit(c, user, 'order.create', cur.lastrowid, after={'total': subtotal-discount})
                 return {'id': cur.lastrowid}, None
+            if path == '/api/batches':
+                require(user, 'owner')
+                return save_batch(c, user, d), None
             if path == '/api/products':
                 require(user, 'owner')
                 pid = text(d.get('id'), 'Mã món', 50)

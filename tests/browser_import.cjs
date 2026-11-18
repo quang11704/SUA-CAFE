@@ -96,13 +96,13 @@ async function main() {
     await page.waitForSelector('.hero');
     let current=await state(page);
     assert.equal(current.demo,true);
-    assert.equal(current.menu.length,3,'Test must start from bundled synthetic data, never a private seed.');
+    assert.equal(current.menu.filter(p=>p.active).length,162,'Test must start from bundled synthetic data, never a private seed.');
     const demoDataset=current.dataset_id;
     const ownerId=current.user.id;
 
     // Keep a paid demo transaction to verify it is archived and never counted as live revenue.
     await page.click('[data-tab="sale"]');
-    await page.locator('[data-product="CF01_M"]').click();await page.click('#add-custom-drink');
+    await page.locator('[data-product="S202611_CF01_M"]').click();await page.click('#add-custom-drink');
     await page.click('#checkout');
     await page.waitForFunction(()=>!document.querySelector('[data-minus]'));
     current=await state(page);
@@ -114,7 +114,7 @@ async function main() {
     await stale.goto(url);
     await stale.waitForSelector('.hero');
     await stale.click('[data-tab="sale"]');
-    await stale.locator('[data-product="CF01_M"]').click();await stale.click('#add-custom-drink');
+    await stale.locator('[data-product="S202611_CF01_M"]').click();await stale.click('#add-custom-drink');
     assert.equal(await stale.locator('[data-minus]').count(),1);
 
     await page.click('#open-live-import');
@@ -161,7 +161,7 @@ async function main() {
     assert.equal(current.user.id,ownerId);
     assert.equal(current.user.username,'live_browser_owner');
     assert.notEqual(current.dataset_id,demoDataset);
-    assert.deepEqual(current.menu.map(p=>p.id),['LIVE_M']);
+    assert.deepEqual(current.menu.filter(p=>!p.active).map(p=>p.id),['LIVE_M']);
     assert.equal(current.stock[0].qty,900);
     assert.equal(current.inventory_date,inventoryDate);
     assert.deepEqual(current.orders,[]);
@@ -182,12 +182,12 @@ async function main() {
     assert.equal((await state(page)).orders.length,0);
 
     await page.click('[data-tab="sale"]');
-    await page.locator('[data-product="LIVE_M"]').click();await page.click('#add-custom-drink');
+    await page.locator('[data-product="S202611_CF01_M"]').click();await page.click('#add-custom-drink');
     await page.click('#checkout');
     await page.waitForFunction(()=>!document.querySelector('[data-minus]'));
     current=await state(page);
     assert.equal(current.orders.length,1);
-    assert.equal(current.orders[0].total,26000);
+    assert.equal(current.orders[0].total,15000);
     assert.equal(current.stock[0].qty,900,'Inventory stays manual until recipe mappings are confirmed.');
     const liveDataset=current.dataset_id;
     const marker=JSON.parse(fs.readFileSync(path.join(temporary,'source.active.json'),'utf8'));
@@ -203,7 +203,7 @@ async function main() {
     assert.equal(current.demo,false);
     assert.equal(current.dataset_id,liveDataset);
     assert.equal(current.user.id,ownerId);
-    assert.deepEqual(current.menu.map(p=>p.id),['LIVE_M']);
+    assert.deepEqual(current.menu.filter(p=>!p.active).map(p=>p.id),['LIVE_M']);
     assert.equal(current.stock[0].qty,900);
     assert.equal(current.orders.length,1);
     assert(await page.locator('#demo-banner').isHidden());

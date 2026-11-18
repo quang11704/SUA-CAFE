@@ -7,23 +7,24 @@ class LabelTest(unittest.TestCase):
  setUp=test_branding.BrandingTest.setUp
  tearDown=test_branding.BrandingTest.tearDown
  def order(self,items=None,note=''):
-  data=dict(request_key=secrets.token_hex(12),items=items or [dict(id='CF01_M',qty=3,note='Ít đá')],payment='Tiền mặt',note=note)
+  data=dict(request_key=secrets.token_hex(12),items=items or [dict(id='S202611_CF01_M',qty=3,note='Ít đá')],payment='Tiền mặt',note=note)
   status,result=self.owner.call('orders',data);self.assertEqual(status,201,result);return result['id']
  def test_one_label_each_cup_50x30_and_snapshot(self):
   oid=self.order()
   status,raw=self.owner.call('labels/'+str(oid));self.assertEqual(status,200)
   text=raw.decode();self.assertEqual(text.count('<section class="label"'),3)
   self.assertIn('size:50.0mm 30.0mm',text)
+  self.assertNotIn(f'#{oid}', text.split('<main>', 1)[1])
   for i in range(1,4):self.assertIn(str(i)+'/3',text)
-  self.assertIn('Ít đá',text);self.assertIn('22.000 đ/ly',text)
-  self.owner.call('products',dict(id='CF01_M',name='Changed',category='Test',size='M',price=99000,cost=1,active=True))
+  self.assertIn('Ít đá',text);self.assertIn('15.000 đ/ly',text)
+  self.owner.call('products',dict(id='S202611_CF01_M',name='Changed',category='Test',size='M',price=99000,cost=1,active=True))
   raw=self.owner.call('labels/'+str(oid))[1].decode()
-  self.assertIn('22.000 đ/ly',raw);self.assertNotIn('99.000 đ/ly',raw)
+  self.assertIn('15.000 đ/ly',raw);self.assertNotIn('99.000 đ/ly',raw)
  def test_toppings_notes_and_html_escape(self):
   self.owner.call('toppings',dict(id='TOP_TEST',name='Kem Muối',price=5000,cost=1000,active=True,cost_known=True))
-  oid=self.order([dict(id='CF01_M',qty=1,toppings=[dict(id='TOP_TEST',qty=2)],note='<script>x()</script>')])
+  oid=self.order([dict(id='S202611_CF01_M',qty=1,toppings=[dict(id='TOP_TEST',qty=2)],note='<script>x()</script>')])
   status,raw=self.owner.call('labels/'+str(oid));self.assertEqual(status,200)
-  text=raw.decode();self.assertIn('32.000 đ/ly',text);self.assertIn('Kem Muối × 2',text);self.assertNotIn('<script>x()',text);self.assertIn('&lt;script&gt;',text)
+  text=raw.decode();self.assertIn('25.000 đ/ly',text);self.assertIn('Kem Muối × 2',text);self.assertNotIn('<script>x()',text);self.assertIn('&lt;script&gt;',text)
  def test_partial_reprint_does_not_create_order(self):
   oid=self.order();before=len(self.owner.state()['orders'])
   for _ in range(2):
@@ -44,7 +45,7 @@ class LabelTest(unittest.TestCase):
   staff=Client(self.url);staff.login('label_staff',self.password)
   self.assertEqual(staff.call('labels/'+str(oid))[0],403)
   self.assertEqual(staff.call('label-settings',{})[0],403)
-  status,data=staff.call('orders',dict(request_key=secrets.token_hex(12),items=[dict(id='CF01_M',qty=1)],payment='Tiền mặt'));self.assertEqual(status,201)
+  status,data=staff.call('orders',dict(request_key=secrets.token_hex(12),items=[dict(id='S202611_CF01_M',qty=1)],payment='Tiền mặt'));self.assertEqual(status,201)
   self.assertEqual(staff.call('labels/'+str(data['id']))[0],200)
   self.assertEqual(self.owner.call('labels/'+str(oid)+'?dataset=old')[0],409)
  def test_long_content_prevents_automatic_clipped_print(self):

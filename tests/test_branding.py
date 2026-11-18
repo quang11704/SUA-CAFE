@@ -20,7 +20,7 @@ class BrandingTest(unittest.TestCase):
  def save(self,color='pink'):
   raw=self.logo(color);status,data=self.owner.call('branding',{'logo':{'name':'logo.png','base64':base64.b64encode(raw).decode()},'font':'script'});self.assertEqual(status,201,data);return raw
  def sale(self):
-  status,data=self.owner.call('orders',dict(request_key=secrets.token_hex(12),items=[dict(id='CF01_M',qty=1)],payment='Tiền mặt'));self.assertEqual(status,201,data);return data['id']
+  status,data=self.owner.call('orders',dict(request_key=secrets.token_hex(12),items=[dict(id='S202611_CF01_M',qty=1)],payment='Tiền mặt'));self.assertEqual(status,201,data);return data['id']
  def test_logo_exact_bytes_auth_and_settings_merge(self):
   raw=self.save();s=self.owner.state();url=s['settings']['logo_url'].removeprefix('/api/')
   self.assertEqual(self.owner.call(url),(200,raw));self.assertEqual(Client(self.url).call(url)[0],401)
@@ -52,7 +52,7 @@ class BrandingTest(unittest.TestCase):
   self.owner.state();self.assertEqual(self.owner.call(url.removeprefix('/api/')),(200,raw))
  def test_print_toppings_and_no_script_injection(self):
   self.owner.call('toppings',dict(id='TEST_CREAM',name='Kem Muối',price=5000,cost=1000,cost_known=True,active=True))
-  status,result=self.owner.call('orders',dict(request_key=secrets.token_hex(12),items=[dict(id='CF01_M',qty=2,toppings=[dict(id='TEST_CREAM',qty=2)])],payment='Tiền mặt',note='<script>bad()</script>'));self.assertEqual(status,201,result)
-  status,html=self.owner.call('print/'+str(result['id']));self.assertEqual(status,200);self.assertIn('64.000'.encode(),html);self.assertIn('Kem Muối'.encode(),html);self.assertNotIn(b'<script>bad()',html)
+  status,result=self.owner.call('orders',dict(request_key=secrets.token_hex(12),items=[dict(id='S202611_CF01_M',qty=2,toppings=[dict(id='TEST_CREAM',qty=2)])],payment='Tiền mặt',note='<script>bad()</script>'));self.assertEqual(status,201,result)
+  status,html=self.owner.call('print/'+str(result['id']));self.assertEqual(status,200);self.assertIn('50.000'.encode(),html);self.assertIn('Kem Muối'.encode(),html);self.assertNotIn(b'<script>bad()',html)
 
 if __name__=='__main__':unittest.main()

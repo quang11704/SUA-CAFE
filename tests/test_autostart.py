@@ -24,6 +24,8 @@ class AutostartTest(unittest.TestCase):
             shutil.copy2(original / '.devcontainer' / name, self.root / '.devcontainer' / name)
         (self.root / '.venv/bin').mkdir(parents=True)
         (self.root / '.venv/bin/python').symlink_to(sys.executable)
+        (self.root / 'data').mkdir()
+        (self.root / 'data/menu_2026_11.json').write_text('{}')
         (self.root / 'requirements.txt').write_text('')
         (self.root / 'server.py').write_text('''import os,json
 from http.server import BaseHTTPRequestHandler,HTTPServer

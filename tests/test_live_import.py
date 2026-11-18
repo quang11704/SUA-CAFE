@@ -144,7 +144,7 @@ class LiveImportTest(unittest.TestCase):
         return preview, payload, result
 
     def demo_sale(self):
-        product = self.owner.state()['menu'][0]
+        product = next(p for p in self.owner.state()['menu'] if p['active'])
         status, result = self.owner.call('orders', {
             'request_key': secrets.token_hex(16),
             'items': [{'id': product['id'], 'qty': 1}], 'payment': 'Tiền mặt'})
@@ -178,7 +178,7 @@ class LiveImportTest(unittest.TestCase):
         state = self.owner.state()
         self.assertFalse(state['demo'])
         self.assertNotEqual(state['dataset_id'], old_dataset)
-        self.assertEqual([item['id'] for item in state['menu']], ['LIVE_M'])
+        self.assertEqual([item['id'] for item in state['menu'] if not item['active']], ['LIVE_M'])
         self.assertEqual(state['stock'][0]['qty'], 900)
         self.assertEqual(state['orders'], [])
         self.assertEqual(state['expenses'], [])
@@ -212,17 +212,29 @@ class LiveImportTest(unittest.TestCase):
         self.assertTrue(repeated['activated'])
         self.assertEqual(Path(server.DB), live_path)
         status, failure = self.owner.call('orders', {
-            'request_key': secrets.token_hex(16), 'items': [{'id': 'LIVE_M', 'qty': 1}],
+            'request_key': secrets.token_hex(16), 'items': [{'id': 'S202611_CF01_M', 'qty': 1}],
             'payment': 'Tiền mặt'}, headers={'X-Sua-Dataset': old_dataset})
         self.assertEqual(status, 409)
         self.assertEqual(failure['code'], 'DATASET_CHANGED')
         self.owner.state()
         status, order = self.owner.call('orders', {
-            'request_key': secrets.token_hex(16), 'items': [{'id': 'LIVE_M', 'qty': 1}],
+            'request_key': secrets.token_hex(16), 'items': [{'id': 'S202611_CF01_M', 'qty': 1}],
             'payment': 'Tiền mặt'})
         self.assertEqual(status, 201, order)
         self.assertEqual(len(self.owner.state()['orders']), 1)
         self.assertEqual(self.owner.call('import/preview', sample_uploads())[0], 409)
+
+    def test_imported_batch_can_be_edited_and_survives_restart(self):
+        self.activate()
+        batch = self.owner.state()['batches'][0]
+        updated = dict(batch, formula='Ủ trà trong 10 phút', yield_qty=250, unit='ml')
+        self.assertEqual(self.owner.call('batches', updated)[0], 201)
+        self.assertEqual(self.owner.call('batches', updated)[0], 201)
+        self.assertEqual(self.owner.call('batches', dict(batch, formula='Bản cũ'))[0], 409)
+        server.init()
+        saved, = self.owner.state()['batches']
+        self.assertEqual((saved['id'], saved['revision']), (batch['id'], 2))
+        self.assertEqual((saved['formula'], saved['yield_qty']), (updated['formula'], 250))
 
     def test_activation_marker_and_seed_survive_initialization(self):
         self.activate()
@@ -236,7 +248,7 @@ class LiveImportTest(unittest.TestCase):
         server.init()
         state = self.owner.state()
         self.assertFalse(state['demo'])
-        self.assertEqual([p['id'] for p in state['menu']], ['LIVE_M'])
+        self.assertEqual([p['id'] for p in state['menu'] if not p['active']], ['LIVE_M'])
         self.assertEqual(state['stock'][0]['qty'], 900)
         with server.connect() as connection:
             seed = server.load_seed(connection)
@@ -352,7 +364,7 @@ class LiveImportTest(unittest.TestCase):
         self.activate()
         self.owner.state()
         status,result=self.owner.call('orders',{'request_key':secrets.token_hex(16),
-            'items':[{'id':'LIVE_M','qty':1}],'payment':'Tiền mặt'})
+            'items':[{'id':'S202611_CF01_M','qty':1}],'payment':'Tiền mặt'})
         self.assertEqual(status,201)
         invoice='invoice/'+str(result['id'])
         self.assertEqual(self.owner.call(invoice+'?dataset='+old)[0],409)

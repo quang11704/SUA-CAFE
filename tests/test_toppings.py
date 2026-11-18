@@ -32,6 +32,9 @@ class ToppingTest(unittest.TestCase):
             dict(id='OTHER_M',name='Trà Thử',category='Tea',size='M',price=20000,cost=7000)],
             stock=[dict(id=1,name='Test stock',unit='g',price=1,qty=100,minimum=1,note='Synthetic')],
             recipes=[],batches=[],history=[])
+        catalog.CATALOG_PATH=folder/'catalog.json'
+        self.catalog=dict(version='old-menu',products=seed['menu'],toppings=[],suggestions=[])
+        self.write_catalog()
         server.init(seed=seed,demo=True)
         self.catalog=dict(version='test-menu-v1',products=[
             dict(id='NEW_M',name='Cafe Sữa',category='Coffee',size='M',price=18000),
@@ -41,7 +44,6 @@ class ToppingTest(unittest.TestCase):
                       dict(id='T_SPEC',name='Kem Chanh',price=5000,scope='suggested')],
             suggestions=[dict(product_name='Cafe Sữa',topping_id='T_GEN',price=5000),
                          dict(product_name='Cafe Sữa',topping_id='T_SPEC',price=5000)])
-        catalog.CATALOG_PATH=folder/'catalog.json'
         self.write_catalog()
         self.http=server.ThreadingHTTPServer(('127.0.0.1',0),server.Handler)
         self.thread=threading.Thread(target=self.http.serve_forever,daemon=True);self.thread.start()

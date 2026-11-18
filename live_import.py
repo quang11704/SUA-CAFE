@@ -103,10 +103,7 @@ def _validate(app, seed):
         r['unit'] = app.text(r['unit'], 'Đơn vị định lượng', 60)
         r['source'] = app.text(r.get('source') or '', 'Nguồn định lượng', 100, False)
     for b in seed['batches']:
-        b['name'] = app.text(b['name'], 'Tên bán thành phẩm', 200)
-        b['formula'] = app.text(b['formula'], 'Công thức mẻ', 3000)
-        b['yield_qty'] = app.positive(b['yield_qty'])
-        b['unit'] = app.text(b['unit'], 'Đơn vị bán thành phẩm', 60)
+        b.update(app.batch_fields(b))
     from collections import Counter
     dates = Counter(h['date'] for h in seed['history'])
     for h in seed['history']:

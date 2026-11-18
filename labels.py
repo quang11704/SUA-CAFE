@@ -74,7 +74,7 @@ def render(app, order, settings, query):
                 text.append('Ly: '+item['note'])
             if order.get('note'):
                 text.append('Đơn: '+order['note'])
-            text.extend([f"#{order['id']} · {index}/{total} · {order['created'][11:16]}",
+            text.extend([f"{index}/{total} · {order['created'][11:16]}",
                          f"{app.money(item['price']):,} đ/ly".replace(',', '.')])
             size = cfg['font_pt']
             while True:

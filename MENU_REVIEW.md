@@ -23,11 +23,11 @@ Nguồn: hai ảnh menu do chủ quán gửi trong phiên làm việc. `data/men
 - `Trà Quýt Jeju` giữ giá **30.000 / 35.000 / 45.000** theo ảnh.
 - Các món đã có thành phần trong tên (ví dụ Trà Sữa Kem Cheese, Dâu Latte Kem Dâu) là món riêng; không tự cộng thêm giá topping cho thành phần mặc định.
 - Dấu sao trong ảnh là trang trí/gợi ý món; chưa được diễn giải thành thay đổi giá, khuyến mãi hoặc thành phần.
-- Menu mới cần được chủ quán xem trước/xác nhận khi áp dụng. Không tự ghi đè giá vốn/công thức hay thay đổi đơn đã bán.
+- Menu tự cập nhật một lần theo phiên bản khi khởi động hoặc khởi tạo dữ liệu thật từ Excel. Không tự ghi đè giá vốn/công thức hay thay đổi đơn đã bán.
 
 ## Giá topping chung và giá cộng theo món
 
-Catalog có **10 topping chung** (`scope: general`) ở chân ảnh và **10 thành phần cộng thêm theo gợi ý món** (`scope: suggested`). Có **30 gợi ý** nối tên món với topping và giá cộng được in ngay dưới món đó.
+Catalog có **10 topping chung** (`scope: general`) ở chân ảnh và **11 thành phần cộng thêm theo gợi ý món** (`scope: suggested`). Có **30 gợi ý** nối tên món với topping và giá cộng được in ngay dưới món đó.
 
 | Topping chung ở chân ảnh | Giá cộng |
 | --- | ---: |
@@ -58,7 +58,7 @@ Các gợi ý khác gồm Kem Chanh, Sương Sáo, Sữa Thái Lan, Sữa Hạt,
 
 1. Tên cà phê đọc được là **“Cafe Dalgonal”**; giữ nguyên thay vì tự sửa sang cách viết phổ biến “Dalgona”.
 2. Topping phô mai ở chân ảnh đọc là **“Phô Mai Jerrry”** (ba chữ r). Cần xác nhận nếu tên mong muốn là Jerry/Jerry Cheese.
-3. Ảnh ghi **“+ Sữa Thái Lan”** dưới Cafe Sữa Tươi và **“+ Sữa Thái”** dưới Cacao Latte, cùng giá 8.000. JSON dùng một mã `TOP_SUA_THAI_LAN` với tên Sữa Thái Lan cho hai gợi ý; nếu quán dùng hai sản phẩm khác nhau cần tách mã.
+3. Ảnh ghi **“+ Sữa Thái Lan”** dưới Cafe Sữa Tươi và **“+ Sữa Thái”** dưới Cacao Latte, cùng giá 8.000. Hai lựa chọn hiển thị đúng theo tên in dưới từng món.
 4. `Phindi Hạnh Nhân`, `Matcha Coldwhisk`, `Trà Lài Đác Thơm`, `Nhãn Dừa Bồng Tuyết` được chép theo cách đọc ảnh. Không dịch hoặc đổi thành món khác.
 
 Không suy đoán giá vốn, hạn dùng, công thức nguyên liệu, giới hạn topping hoặc lượng topping từ các ảnh này. Những phần đó cần dữ liệu riêng đã đối soát.

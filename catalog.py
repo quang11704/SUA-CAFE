@@ -82,8 +82,9 @@ def _match(product, existing):
     return matches[0] if len(matches) == 1 else None
 
 
-def preview(app, c):
-    data = load_catalog(app)
+def preview(app, c, data=None):
+    if data is None:
+        data = load_catalog(app)
     existing = [dict(r) for r in c.execute('SELECT * FROM products')]
     existing_toppings = [dict(r) for r in c.execute('SELECT * FROM toppings')]
     products = []
@@ -116,6 +117,17 @@ def apply(app, c, user, payload):
         raise app.ApiError(409, 'Phiên bản menu đã thay đổi; hãy mở bản xem trước mới')
     if reviewed['already_applied']:
         return dict(applied=True, version=reviewed['version'], replayed=True, counts=reviewed['counts'],dataset_id=app.metadata(c,'dataset_id'))
+    return _install(app, c, user, reviewed)
+
+
+def ensure_current(app, c):
+    data = load_catalog(app)
+    if app.metadata(c, 'catalog_version') != data['version']:
+        reviewed = preview(app, c, data)
+        _install(app, c, {'id': None, 'username': 'system'}, reviewed)
+
+
+def _install(app, c, user, reviewed):
     previous_version = app.metadata(c, 'catalog_version')
     # Retirement preserves all snapshots and permits older item references.
     c.execute('UPDATE products SET active=0')

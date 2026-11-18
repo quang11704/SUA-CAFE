@@ -60,7 +60,7 @@ def stop_managed():
 
 
 def revision():
-    sources = sorted(ROOT.glob('*.py')) + sorted((ROOT / '.devcontainer').glob('*.py')) + [ROOT / 'requirements.txt']
+    sources = sorted(ROOT.glob('*.py')) + sorted((ROOT / '.devcontainer').glob('*.py')) + [ROOT / 'requirements.txt', ROOT / 'data/menu_2026_11.json']
     digest = hashlib.sha256()
     for file in sources:
         digest.update(file.name.encode())

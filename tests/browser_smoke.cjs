@@ -25,6 +25,20 @@ async function main(){
     await page.locator('[name="username"]').fill('browser_owner');
     await page.locator('[name="password"]').fill(password);
     await page.locator('#login-form button').click();await page.waitForSelector('.hero');
+    await page.click('[data-tab="recipes"]');
+    await page.click('#add-batch');
+    for(const [key,value] of Object.entries({name:'Cốt trà thử',formula:'10 g trà\nỦ 10 phút',yield_qty:'300',unit:'ml'})){
+      await page.locator(`dialog [name="${key}"]`).fill(value);
+    }
+    await page.getByRole('button',{name:'Lưu công thức'}).click();
+    await page.getByText('Cốt trà thử',{exact:true}).click();
+    await page.getByRole('button',{name:'Sửa công thức'}).click();
+    await page.locator('dialog [name="yield_qty"]').fill('350');
+    await page.getByRole('button',{name:'Lưu công thức'}).click();
+    await page.waitForSelector('dialog',{state:'detached'});
+    await page.reload();await page.click('[data-tab="recipes"]');
+    await page.getByText('Cốt trà thử',{exact:true}).click();
+    await page.getByText('THÀNH PHẨM: 350 ml',{exact:true}).waitFor();
     await page.click('[data-tab="recipes"]');await page.click('#add-product');
     for(const [key,value] of Object.entries({id:'BROWSER_TEST',name:'Món thử giao diện',category:'Test',size:'M',price:'32000',cost:'10000'}))await page.locator(`dialog [name="${key}"]`).fill(value);
     await page.locator('dialog button[type="submit"]').click();await page.waitForSelector('dialog',{state:'detached'});

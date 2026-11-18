@@ -74,7 +74,7 @@ class AppTest(unittest.TestCase):
         cls.tmp.cleanup()
 
     def sale(self, client=None, **kwargs):
-        data = dict(request_key=secrets.token_hex(16),items=[dict(id='CF01_M',qty=2,price=1)],payment='Tiền mặt')
+        data = dict(request_key=secrets.token_hex(16),items=[dict(id='S202611_CF01_M',qty=2,price=1)],payment='Tiền mặt')
         data.update(kwargs)
         status, result = (client or self.owner).call('orders', data)
         self.assertEqual(status, 201, result)
@@ -122,7 +122,7 @@ class AppTest(unittest.TestCase):
             self.assertTrue(all('cost' not in item for item in json.loads(o['items'])))
         for path in ['report','backup','export','invoice/'+str(owner_id)]:
             self.assertEqual(self.cashier.call(path)[0],403,path)
-        for path in ['products','users','settings','expenses','stock']:
+        for path in ['products','users','settings','expenses','stock','batches']:
             self.assertEqual(self.cashier.call(path,{})[0],403,path)
         inv=self.inventory.state()
         self.assertTrue(inv['stock']);self.assertTrue(inv['recipes']);self.assertFalse(inv['orders'])
@@ -185,7 +185,7 @@ class AppTest(unittest.TestCase):
         self.assertEqual(self.owner.call('report?period=2026-99')[0], 400)
 
     def test_expense_and_void(self):
-        date = server.now()[:10]
+        date = '2030-03-15'
         before = self.owner.call('report?period=' + date)[1]
         self.assertEqual(self.owner.call('expenses', dict(date=date, name='Điện', amount=50000, category='Điện nước'))[0], 201)
         after = self.owner.call('report?period=' + date)[1]
@@ -216,7 +216,7 @@ class AppTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'không khớp'):
                     server.init()
             with server.connect() as c:
-                self.assertEqual(c.execute('SELECT COUNT(*) FROM products').fetchone()[0],len(server.SEED['menu']))
+                self.assertEqual(c.execute('SELECT COUNT(*) FROM products WHERE active=0').fetchone()[0],len(server.SEED['menu']))
         finally:server.DB=original
 
     def test_legacy_database_migration(self):
@@ -233,7 +233,7 @@ class AppTest(unittest.TestCase):
         finally:server.DB=original
 
     def test_invalid_sales_and_money(self):
-        for items in [[],[dict(id='CF01_M',qty=-1)],[dict(id='CF01_M',qty=0.5)],[dict(id='MISSING',qty=1)]]:
+        for items in [[],[dict(id='S202611_CF01_M',qty=-1)],[dict(id='S202611_CF01_M',qty=0.5)],[dict(id='MISSING',qty=1)]]:
             self.assertEqual(self.owner.call('orders',dict(request_key=secrets.token_hex(8),items=items,payment='Tiền mặt'))[0],400)
         self.assertEqual(self.owner.call('expenses',dict(date='2026-11-02',name='Sai',amount=-1))[0],400)
         self.assertEqual(server.money('1234.5'),1235)
@@ -264,7 +264,7 @@ class AppTest(unittest.TestCase):
 
     def test_long_invoice_and_legacy_transactions_on_later_day(self):
         # The order stays on its business day; the refund belongs to its own day.
-        oid,_=self.sale(items=[dict(id='CF01_M',qty=1)]*70,note='Ghi chú tiếng Việt '*20)
+        oid,_=self.sale(items=[dict(id='S202611_CF01_M',qty=1)]*70,note='Ghi chú tiếng Việt '*20)
         with server.connect() as c:
             c.execute("UPDATE orders SET created='2026-01-01T10:00:00+07:00' WHERE id=?",(oid,))
         before=self.owner.call('report?period=2026-01-01')[1]
